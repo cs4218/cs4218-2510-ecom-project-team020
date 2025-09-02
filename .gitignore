@@ -3,3 +3,23 @@ node_modules
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Dependency lock files
+pnpm-lock.yaml
+client/pnpm-lock.yaml
+
+# Coverage reports
+coverage/
+/coverage/
+client/coverage/
+
+# Coverage report files
+*.lcov
+lcov.info
+coverage-final.json
+clover.xml
+
+# Coverage HTML reports
+lcov-report/
+/lcov-report/
+client/lcov-report/
