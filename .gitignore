@@ -8,18 +8,11 @@ node_modules
 pnpm-lock.yaml
 client/pnpm-lock.yaml
 
-# Coverage reports
-coverage/
-/coverage/
-client/coverage/
-
-# Coverage report files
-*.lcov
-lcov.info
-coverage-final.json
-clover.xml
-
-# Coverage HTML reports
-lcov-report/
-/lcov-report/
-client/lcov-report/
+# Coverage report files (keep directory structure but ignore generated content)
+coverage/clover.xml
+coverage/coverage-final.json
+coverage/lcov.info
+coverage/lcov-report/*.html
+coverage/lcov-report/*.js
+coverage/lcov-report/*.css
+coverage/lcov-report/*.png
