@@ -3,16 +3,3 @@ node_modules
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-
-# Dependency lock files
-pnpm-lock.yaml
-client/pnpm-lock.yaml
-
-# Coverage report files (keep directory structure but ignore generated content)
-coverage/clover.xml
-coverage/coverage-final.json
-coverage/lcov.info
-coverage/lcov-report/*.html
-coverage/lcov-report/*.js
-coverage/lcov-report/*.css
-coverage/lcov-report/*.png
