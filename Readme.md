@@ -1,4 +1,5 @@
 # CS4218 Project - Virtual Vault
+Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/17570194597/job/49904621693
 
 ## 1. Project Introduction
 
