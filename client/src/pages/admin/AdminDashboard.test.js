@@ -87,4 +87,20 @@ describe('AdminDashboard Component', () => {
     expect(getByText(`Admin Email : ${mockAuth.user.email}`)).toBeInTheDocument();
     expect(getByText(`Admin Contact : ${mockAuth.user.phone}`)).toBeInTheDocument();
   });
+
+  it('renders with proper CSS classes and structure', () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/dashboard/admin']}>
+        <Routes>
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(container.querySelector('.container-fluid.m-3.p-3')).toBeInTheDocument();
+    expect(container.querySelector('.row')).toBeInTheDocument();
+    expect(container.querySelector('.col-md-3')).toBeInTheDocument();
+    expect(container.querySelector('.col-md-9')).toBeInTheDocument();
+    expect(container.querySelector('.card.w-75.p-3')).toBeInTheDocument();
+  });
 });
