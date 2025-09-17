@@ -103,4 +103,40 @@ describe('AdminDashboard Component', () => {
     expect(container.querySelector('.col-md-9')).toBeInTheDocument();
     expect(container.querySelector('.card.w-75.p-3')).toBeInTheDocument();
   });
+
+  it('handles null auth user gracefully', () => {
+    // Override the mock for this specific test
+    const { useAuth } = require('../../context/auth');
+    useAuth.mockReturnValueOnce([{ user: null }, jest.fn()]);
+
+    const { getByText } = render(
+      <MemoryRouter initialEntries={['/dashboard/admin']}>
+        <Routes>
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(getByText('Admin Name :')).toBeInTheDocument();
+    expect(getByText('Admin Email :')).toBeInTheDocument();
+    expect(getByText('Admin Contact :')).toBeInTheDocument();
+  });
+
+  it('handles undefined auth gracefully', () => {
+    // Override the mock for this specific test
+    const { useAuth } = require('../../context/auth');
+    useAuth.mockReturnValueOnce([null, jest.fn()]);
+
+    const { getByText } = render(
+      <MemoryRouter initialEntries={['/dashboard/admin']}>
+        <Routes>
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(getByText('Admin Name :')).toBeInTheDocument();
+    expect(getByText('Admin Email :')).toBeInTheDocument();
+    expect(getByText('Admin Contact :')).toBeInTheDocument();
+  });
 });
