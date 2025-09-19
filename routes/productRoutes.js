@@ -1,7 +1,5 @@
 import express from "express";
 import {
-  brainTreePaymentController,
-  braintreeTokenController,
   createProductController,
   deleteProductController,
   getProductController,
@@ -15,6 +13,10 @@ import {
   searchProductController,
   updateProductController,
 } from "../controllers/productController.js";
+import {
+  brainTreePaymentController,
+  braintreeTokenController,
+} from "../controllers/paymentController.js";
 import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
 import formidable from "express-formidable";
 
