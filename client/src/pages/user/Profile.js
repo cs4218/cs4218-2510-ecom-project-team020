@@ -39,8 +39,13 @@ const Profile = () => {
         toast.error(data?.error);
       } else {
         setAuth({ ...auth, user: data?.updatedUser });
-        let ls = localStorage.getItem("auth");
-        ls = JSON.parse(ls);
+        // let ls = localStorage.getItem("auth");
+        // ls = JSON.parse(ls);
+        // ls.user = data.updatedUser;
+        // localStorage.setItem("auth", JSON.stringify(ls));
+        let ls = localStorage.getItem("auth")
+          ? JSON.parse(localStorage.getItem("auth"))
+          : { token: "", user: {} };
         ls.user = data.updatedUser;
         localStorage.setItem("auth", JSON.stringify(ls));
         toast.success("Profile Updated Successfully");
