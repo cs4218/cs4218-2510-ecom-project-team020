@@ -61,54 +61,59 @@ const Profile = () => {
               <form onSubmit={handleSubmit}>
                 <h4 className="title">USER PROFILE</h4>
                 <div className="mb-3">
+                  <label htmlFor="name">Name</label>
                   <input
+                    id="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="form-control"
-                    id="exampleInputEmail1"
                     placeholder="Enter Your Name"
                     autoFocus
                   />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="email">Email</label>
                   <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="form-control"
-                    id="exampleInputEmail1"
-                    placeholder="Enter Your Email "
+                    placeholder="Enter Your Email"
                     disabled
                   />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="password">Password</label>
                   <input
+                    id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="form-control"
-                    id="exampleInputPassword1"
                     placeholder="Enter Your Password"
                   />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="phone">Phone</label>
                   <input
+                    id="phone"
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="form-control"
-                    id="exampleInputEmail1"
                     placeholder="Enter Your Phone"
                   />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="address">Address</label>
                   <input
+                    id="address"
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     className="form-control"
-                    id="exampleInputEmail1"
                     placeholder="Enter Your Address"
                   />
                 </div>
