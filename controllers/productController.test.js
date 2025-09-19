@@ -72,6 +72,15 @@ const mockProducts = [
 describe("ProductController", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Suppress console.log during tests to reduce noise
+    jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore console.log after each test
+    if (console.log.mockRestore) {
+      console.log.mockRestore();
+    }
   });
 
   describe("searchProductController", () => {
