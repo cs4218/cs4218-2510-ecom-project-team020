@@ -17,7 +17,7 @@ import {
   productCountController,
   productListController,
   searchProductController,
-  realtedProductController,
+  relatedProductController,
   productCategoryController,
 } from "./productController.js";
 
@@ -239,14 +239,14 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Eror while getitng single product",
+          message: "Error while getting single product",
           error: expect.any(Error),
         })
       );
     });
   });
 
-  describe("realtedProductController", () => {
+  describe("relatedProductController", () => {
     it("should return related products from same category", async () => {
       const req = {
         params: {
@@ -267,7 +267,7 @@ describe("ProductController", () => {
 
       productModel.find = jest.fn().mockReturnValue({ select: selectMock });
 
-      await realtedProductController(req, res);
+      await relatedProductController(req, res);
 
       expect(productModel.find).toHaveBeenCalledWith({
         category: "507f1f77bcf86cd799439012",
@@ -300,7 +300,7 @@ describe("ProductController", () => {
 
       productModel.find = jest.fn().mockReturnValue({ select: selectMock });
 
-      await realtedProductController(req, res);
+      await relatedProductController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith(
@@ -319,13 +319,13 @@ describe("ProductController", () => {
         throw new Error("DB Error");
       });
 
-      await realtedProductController(req, res);
+      await relatedProductController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "error while geting related product",
+          message: "error while getting related product",
           error: expect.any(Error),
         })
       );
@@ -389,7 +389,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Erorr while getting photo",
+          message: "Error while getting photo",
         })
       );
     });
@@ -408,7 +408,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Erorr while getting photo",
+          message: "Error while getting photo",
           error: expect.any(Error),
         })
       );
@@ -438,7 +438,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          counTotal: mockProducts.length,
+          countTotal: mockProducts.length,
           message: "ALlProducts ",
           products: mockProducts,
         })
@@ -462,7 +462,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          counTotal: 0,
+          countTotal: 0,
           message: "ALlProducts ",
           products: [],
         })
@@ -483,7 +483,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Erorr in getting products",
+          message: "Error in getting products",
           error: "DB Error",
         })
       );
@@ -979,7 +979,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in crearing product",
+          message: "Error in creating product",
           error: expect.any(Error),
         })
       );
@@ -1142,7 +1142,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in Updte product",
+          message: "Error in Update product",
           error: expect.any(Error),
         })
       );
