@@ -108,7 +108,7 @@ describe('Register Component', () => {
     expect(toast.error).toHaveBeenCalledWith('Something went wrong');
   });
 
-  it('should display backend error message when registration fails (Case 2)', async () => {
+  it('should display backend error message when registration fails', async () => {
     axios.post.mockResolvedValueOnce({ data: { success: false, message: 'User already exists' } });
 
     render(
@@ -133,7 +133,7 @@ describe('Register Component', () => {
     expect(toast.error).toHaveBeenCalledWith('User already exists');
   });
 
-  it('should display generic error toast when API throws (Case 3)', async () => {
+  it('should display generic error toast when API throws', async () => {
     axios.post.mockRejectedValueOnce(new Error('Network error'));
 
     render(
@@ -158,7 +158,7 @@ describe('Register Component', () => {
     expect(toast.error).toHaveBeenCalledWith('Something went wrong');
   });
 
-  it('should render all input fields and update their values (EP)', () => {
+  it('should render all input fields and update their values', () => {
     render(
       <MemoryRouter initialEntries={['/register']}>
         <Routes>
