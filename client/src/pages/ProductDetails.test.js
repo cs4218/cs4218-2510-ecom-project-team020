@@ -99,6 +99,7 @@ describe("ProductDetails Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockNavigate.mockClear();
+    axios.get.mockReset();
     // Suppress console.error for act warnings and console.log for errors in tests
     jest.spyOn(console, "error").mockImplementation(() => {});
     jest.spyOn(console, "log").mockImplementation(() => {});
@@ -460,13 +461,10 @@ describe("ProductDetails Component", () => {
     it("should handle missing category data gracefully", async () => {
       const productWithoutCategory = { ...mockProduct, category: null };
 
-      // First call succeeds with product without category
-      // Second call fails when trying to get related products (due to null category)
-      axios.get
-        .mockResolvedValueOnce({
-          data: { product: productWithoutCategory },
-        })
-        .mockRejectedValueOnce(new Error("Cannot read properties of null"));
+      // Only one call - no related products call since category is null
+      axios.get.mockResolvedValueOnce({
+        data: { product: productWithoutCategory },
+      });
 
       renderProductDetails();
 
@@ -475,19 +473,33 @@ describe("ProductDetails Component", () => {
         expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
       });
 
-      // Verify product details are shown but category is empty
+      // Verify product details are shown but category shows "Loading..."
       expect(screen.getByText("Product Details")).toBeInTheDocument();
       expect(
         screen.getByText(/Description : This is a test product description/)
       ).toBeInTheDocument();
-      // Category field should be empty since category is null
-      expect(screen.getByText(/Category :/)).toBeInTheDocument();
+      // Category field should show "Uncategorized" since category is null
+      expect(screen.getByText(/Category : Uncategorized/)).toBeInTheDocument();
+
+      // Verify related products API was NOT called since category is null
+      expect(axios.get).toHaveBeenCalledTimes(1);
+      expect(axios.get).toHaveBeenCalledWith(
+        "/api/v1/product/get-product/test-product"
+      );
+
+      // Verify appropriate message for uncategorized product
+      expect(
+        screen.getByText(
+          "No similar products available - product is uncategorized"
+        )
+      ).toBeInTheDocument();
     });
 
     it("should handle related products API error", async () => {
       // Clear the global console.log mock and create a fresh spy
       console.log.mockClear();
 
+      // mockProduct has valid category, so related products API will be called
       axios.get
         .mockResolvedValueOnce({
           data: { product: mockProduct },
@@ -501,10 +513,21 @@ describe("ProductDetails Component", () => {
         expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
       });
 
-      // Wait for the error to be logged
+      // Wait for the error to be logged from related products API failure
       await waitFor(() => {
         expect(console.log).toHaveBeenCalledWith(expect.any(Error));
       });
+
+      // Verify both API calls were made
+      expect(axios.get).toHaveBeenCalledTimes(2);
+      expect(axios.get).toHaveBeenNthCalledWith(
+        1,
+        "/api/v1/product/get-product/test-product"
+      );
+      expect(axios.get).toHaveBeenNthCalledWith(
+        2,
+        `/api/v1/product/related-product/${mockProduct._id}/${mockProduct.category._id}`
+      );
     });
   });
 });
