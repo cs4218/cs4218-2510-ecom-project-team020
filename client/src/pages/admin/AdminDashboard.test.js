@@ -74,20 +74,6 @@ describe('AdminDashboard Component', () => {
         expect(getByText(`Admin Contact : ${mockAuth.user.phone}`)).toBeInTheDocument();
     });
 
-    it('displays admin information from auth context', () => {
-        const { getByText } = render(
-            <MemoryRouter initialEntries={['/dashboard/admin']}>
-                <Routes>
-                    <Route path="/dashboard/admin" element={<AdminDashboard />} />
-                </Routes>
-            </MemoryRouter>
-        );
-
-        expect(getByText(`Admin Name : ${mockAuth.user.name}`)).toBeInTheDocument();
-        expect(getByText(`Admin Email : ${mockAuth.user.email}`)).toBeInTheDocument();
-        expect(getByText(`Admin Contact : ${mockAuth.user.phone}`)).toBeInTheDocument();
-    });
-
     it('renders with proper CSS classes and structure', () => {
         const { container } = render(
             <MemoryRouter initialEntries={['/dashboard/admin']}>
