@@ -131,7 +131,7 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    fireEvent.click(await screen.findByText(/Loadmore/i));
+    fireEvent.click(await screen.findByText(/Load More/i));
     expect(await screen.findByText("Book B")).toBeInTheDocument();
   });
 
@@ -153,7 +153,7 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    expect(screen.queryByText(/Loadmore/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Load More/i)).not.toBeInTheDocument();
   });
 
   it("handles API error in loadMore gracefully", async () => {
@@ -171,7 +171,7 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    const loadMoreBtn = await screen.findByText(/Loadmore/i);
+    const loadMoreBtn = await screen.findByText(/Load More/i);
     fireEvent.click(loadMoreBtn);
 
     // still shows first page products
