@@ -132,7 +132,7 @@ const HomePage = () => {
           {/* price filter */}
           <h4 className="text-center mt-4">Filter By Price</h4>
           <div className="d-flex flex-column selector">
-              <Radio.Group onChange={(e) => setRadio(e.target.value)}>
+            <Radio.Group onChange={(e) => setRadio(e.target.value)}>
               {Prices?.map((p) => (
                 <div key={p._id}>
                   <Radio value={p.array}>{p.name}</Radio>
@@ -214,8 +214,9 @@ const HomePage = () => {
                   "Loading ..."
                 ) : (
                   <>
-                    {" "}
-                    Loadmore <AiOutlineReload />
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      Load More <AiOutlineReload />
+                    </div>
                   </>
                 )}
               </button>
