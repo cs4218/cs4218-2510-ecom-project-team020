@@ -4,7 +4,7 @@ import Layout from "./../components/Layout";
 const Policy = () => {
   return (
     <Layout title={"Privacy Policy"}>
-      <div className="row contactus ">
+      <div className="row contactus align-items-center">
         <div className="col-md-6 ">
           <img
             src="/images/contactus.jpeg"
@@ -12,7 +12,7 @@ const Policy = () => {
             style={{ width: "100%" }}
           />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-4 text-center">
           <p>
             At Virtual Vault, your privacy is important to us. We are dedicated to 
             handling your personal information responsibly and transparently. This 
