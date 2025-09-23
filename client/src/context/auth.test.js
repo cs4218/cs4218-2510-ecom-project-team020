@@ -43,6 +43,7 @@ describe("AuthProvider", () => {
   });
 
   test("falls back to default state when localStorage contains invalid JSON", () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
     localStorage.getItem.mockReturnValue("not-json");
 
     render(
@@ -53,6 +54,8 @@ describe("AuthProvider", () => {
 
     expect(screen.getByTestId("user").textContent).toBe("null");
     expect(screen.getByTestId("token").textContent).toBe("empty");
+
+    consoleSpy.mockRestore();
   });
 
   test("sets auth state to empty values when JSON is valid but missing user/token", () => {
