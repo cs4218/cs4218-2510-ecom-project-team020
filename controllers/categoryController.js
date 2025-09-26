@@ -60,11 +60,11 @@ export const updateCategoryController = async (req, res) => {
 // get all cat
 export const categoryController = async (req, res) => {
   try {
-    const category = await categoryModel.find({});
+    const categories = await categoryModel.find({});
     res.status(200).send({
       success: true,
       message: "All Categories List",
-      category,
+      categories,
     });
   } catch (error) {
     console.log(error);
