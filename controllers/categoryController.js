@@ -1,5 +1,7 @@
 import categoryModel from "../models/categoryModel.js";
 import slugify from "slugify";
+
+// Create a category
 export const createCategoryController = async (req, res) => {
   try {
     const { name } = req.body;
@@ -32,7 +34,7 @@ export const createCategoryController = async (req, res) => {
   }
 };
 
-//update category
+// Update a category
 export const updateCategoryController = async (req, res) => {
   try {
     const { name } = req.body;
@@ -57,7 +59,7 @@ export const updateCategoryController = async (req, res) => {
   }
 };
 
-// get all cat
+// Get all categories
 export const getCategoriesController = async (req, res) => {
   try {
     const categories = await categoryModel.find({});
@@ -95,7 +97,7 @@ export const singleCategoryController = async (req, res) => {
   }
 };
 
-//delete category -- TODO: obvious bug here in name
+// Delete a category
 export const deleteCategoryController = async (req, res) => {
   try {
     const { id } = req.params;
