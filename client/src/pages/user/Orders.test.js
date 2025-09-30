@@ -4,7 +4,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import Orders from "./Orders";
 import axios from "axios";
 import '@testing-library/jest-dom/extend-expect';
-import { describe } from "node:test";
 
 jest.mock("axios");
 jest.mock("../../context/cart", () => ({
