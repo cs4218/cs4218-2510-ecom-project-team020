@@ -1,3 +1,4 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
@@ -5,7 +6,6 @@ import Profile from "./Profile";
 import axios from "axios";
 import toast from "react-hot-toast";
 import '@testing-library/jest-dom/extend-expect';
-// import { describe } from 'node:test';
 
 jest.mock("axios");
 jest.mock("react-hot-toast");
