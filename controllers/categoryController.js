@@ -57,21 +57,21 @@ export const updateCategoryController = async (req, res) => {
   }
 };
 
-// get all cat
-export const categoryControlller = async (req, res) => {
+// Get all categories
+export const getCategoriesController = async (req, res) => {
   try {
-    const category = await categoryModel.find({});
+    const categories = await categoryModel.find({});
     res.status(200).send({
       success: true,
-      message: "All Categories List",
-      category,
+      message: "All categories retrieved successfully",
+      categories,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       error,
-      message: "Error while getting all categories",
+      message: "Error while retrieving all categories",
     });
   }
 };
@@ -82,7 +82,7 @@ export const singleCategoryController = async (req, res) => {
     const category = await categoryModel.findOne({ slug: req.params.slug });
     res.status(200).send({
       success: true,
-      message: "Get SIngle Category SUccessfully",
+      message: "Category retrieved successfully",
       category,
     });
   } catch (error) {
@@ -90,7 +90,7 @@ export const singleCategoryController = async (req, res) => {
     res.status(500).send({
       success: false,
       error,
-      message: "Error While getting Single Category",
+      message: "Error while retrieving category",
     });
   }
 };
