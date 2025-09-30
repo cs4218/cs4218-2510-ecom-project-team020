@@ -1,3 +1,4 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import React from "react";
 import { MemoryRouter } from 'react-router-dom';
 import { render, screen, waitFor } from "@testing-library/react";
