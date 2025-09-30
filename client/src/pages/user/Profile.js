@@ -4,17 +4,16 @@ import Layout from "./../../components/Layout";
 import { useAuth } from "../../context/auth";
 import toast from "react-hot-toast";
 import axios from "axios";
+
 const Profile = () => {
-  //context
   const [auth, setAuth] = useAuth();
-  //state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [errors, setErrors] = useState({});
 
-  //get user data
   useEffect(() => {
     const { email, name, phone, address } = auth?.user || {};
     setName(name || "");
@@ -23,10 +22,34 @@ const Profile = () => {
     setAddress(address || "");
   }, [auth?.user]);
 
+  const validateForm = () => {
+    const newErrors = {};
 
-  // form function
+    if (phone.trim() && !/^[0-9]{8,15}$/.test(phone)) {
+      newErrors.phone = "Phone number must be 8–15 digits only";
+    }
+
+    if (password) {
+      // at least 8 chars, one uppercase, one special char
+      const strongPasswordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+      if (!strongPasswordRegex.test(password)) {
+        newErrors.password =
+          "Must be at least 8 characters, 1 uppercase letter and 1 special character";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
+
     try {
       const { data } = await axios.put("/api/v1/auth/profile", {
         name,
@@ -51,6 +74,7 @@ const Profile = () => {
       toast.error("Something went wrong");
     }
   };
+
   return (
     <Layout title={"Your Profile"}>
       <div className="container-fluid m-3 p-3">
@@ -80,9 +104,7 @@ const Profile = () => {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="form-control"
-                    placeholder="Enter Your Email"
                     disabled
                   />
                 </div>
@@ -93,9 +115,16 @@ const Profile = () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="form-control"
+                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
                     placeholder="Enter Your Password"
                   />
+                  {errors.password && (
+                    <div
+                      className="invalid-feedback"
+                    >
+                      {errors.password}
+                    </div>
+                  )}
                 </div>
                 <div className="mb-3">
                   <label htmlFor="phone">Phone</label>
@@ -104,9 +133,13 @@ const Profile = () => {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="form-control"
+                    className={`form-control ${errors.phone ? "is-invalid" : ""
+                      }`}
                     placeholder="Enter Your Phone"
                   />
+                  {errors.phone && (
+                    <div className="invalid-feedback">{errors.phone}</div>
+                  )}
                 </div>
                 <div className="mb-3">
                   <label htmlFor="address">Address</label>
@@ -119,10 +152,11 @@ const Profile = () => {
                     placeholder="Enter Your Address"
                   />
                 </div>
-
-                <button type="submit" className="btn btn-primary">
-                  UPDATE
-                </button>
+                <div className="d-flex justify-content-center">
+                  <button type="submit" className="btn btn-primary">
+                    UPDATE
+                  </button>
+                </div>
               </form>
             </div>
           </div>
