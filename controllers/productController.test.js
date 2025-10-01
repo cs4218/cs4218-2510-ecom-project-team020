@@ -491,7 +491,14 @@ describe("ProductController", () => {
   });
 
   describe("productListController", () => {
-    it("should return paginated products for page 1", async () => {
+    // ========================================
+    // EQUIVALENCE PARTITIONING TEST CASES
+    // ========================================
+    // Partition 1: VALID - Positive page numbers (1, 2, 3, ...)
+    // Partition 2: INVALID - Zero or negative page numbers (0, -1, -2, ...)
+    // Partition 3: EDGE - Missing page parameter (defaults to 1)
+
+    it("should return paginated products for page 1 [EP: Valid - Page 1]", async () => {
       const req = { params: { page: 1 } };
       const res = mockResponse();
 
@@ -518,7 +525,7 @@ describe("ProductController", () => {
       );
     });
 
-    it("should return paginated products for page 2", async () => {
+    it("should return paginated products for page 2 [EP: Valid - Page 2]", async () => {
       const req = { params: { page: 2 } };
       const res = mockResponse();
 
@@ -535,7 +542,7 @@ describe("ProductController", () => {
       expect(limitMock).toHaveBeenCalledWith(6);
     });
 
-    it("should use page 1 as default when page param is missing", async () => {
+    it("should use page 1 as default when page param is missing [EP: Edge - Missing page]", async () => {
       const req = { params: {} };
       const res = mockResponse();
 
@@ -549,6 +556,68 @@ describe("ProductController", () => {
       await productListController(req, res);
 
       expect(skipMock).toHaveBeenCalledWith(0); // Default page 1
+    });
+
+    // ========================================
+    // BOUNDARY VALUE ANALYSIS (BVA) TEST CASES
+    // ========================================
+    // Boundary: Page number boundary at 1 (minimum valid page)
+    // Testing: Below boundary (0), At boundary (1), Above boundary (2)
+
+    it("should handle page 0 gracefully [BVA: 0 - Below boundary]", async () => {
+      const req = { params: { page: 0 } };
+      const res = mockResponse();
+
+      const sortMock = jest.fn().mockResolvedValue(mockProducts);
+      const limitMock = jest.fn().mockReturnValue({ sort: sortMock });
+      const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const selectMock = jest.fn().mockReturnValue({ skip: skipMock });
+
+      productModel.find = jest.fn().mockReturnValue({ select: selectMock });
+
+      await productListController(req, res);
+
+      // Page 0 is falsy, so implementation defaults to page 1: (1-1)*6 = 0
+      expect(skipMock).toHaveBeenCalledWith(0); // Page 0 defaults to page 1
+      expect(limitMock).toHaveBeenCalledWith(6);
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("should handle negative page numbers [BVA: -1 - Below boundary]", async () => {
+      const req = { params: { page: -1 } };
+      const res = mockResponse();
+
+      const sortMock = jest.fn().mockResolvedValue(mockProducts);
+      const limitMock = jest.fn().mockReturnValue({ sort: sortMock });
+      const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const selectMock = jest.fn().mockReturnValue({ skip: skipMock });
+
+      productModel.find = jest.fn().mockReturnValue({ select: selectMock });
+
+      await productListController(req, res);
+
+      // Page -1 is truthy, so calculation is (-1-1)*6 = -12
+      expect(skipMock).toHaveBeenCalledWith(-12); // (-1 - 1) * 6 = -12
+      expect(limitMock).toHaveBeenCalledWith(6);
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("should handle large page numbers [BVA: Large number - Above normal range]", async () => {
+      const req = { params: { page: 1000 } };
+      const res = mockResponse();
+
+      const sortMock = jest.fn().mockResolvedValue([]);
+      const limitMock = jest.fn().mockReturnValue({ sort: sortMock });
+      const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const selectMock = jest.fn().mockReturnValue({ skip: skipMock });
+
+      productModel.find = jest.fn().mockReturnValue({ select: selectMock });
+
+      await productListController(req, res);
+
+      expect(skipMock).toHaveBeenCalledWith(5994); // (1000 - 1) * 6 = 5994
+      expect(limitMock).toHaveBeenCalledWith(6);
+      expect(res.status).toHaveBeenCalledWith(200);
     });
 
     it("should handle database errors gracefully", async () => {
@@ -637,7 +706,15 @@ describe("ProductController", () => {
   });
 
   describe("productFiltersController", () => {
-    it("should filter by price range when provided", async () => {
+    // ========================================
+    // EQUIVALENCE PARTITIONING TEST CASES
+    // ========================================
+    // Partition 1: VALID - Price range only (radio has values, checked empty)
+    // Partition 2: VALID - Category only (checked has values, radio empty)
+    // Partition 3: VALID - Both price and category (both have values)
+    // Partition 4: VALID - No filters (both empty)
+
+    it("should filter by price range when provided [EP: Valid - Price range only]", async () => {
       const req = {
         body: {
           checked: [],
@@ -662,7 +739,7 @@ describe("ProductController", () => {
       );
     });
 
-    it("should filter by category when provided", async () => {
+    it("should filter by category when provided [EP: Valid - Category only]", async () => {
       const req = {
         body: {
           checked: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"],
@@ -681,7 +758,7 @@ describe("ProductController", () => {
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it("should filter by both price and category", async () => {
+    it("should filter by both price and category [EP: Valid - Combined filters]", async () => {
       const req = {
         body: {
           checked: ["507f1f77bcf86cd799439012"],
@@ -707,7 +784,7 @@ describe("ProductController", () => {
       );
     });
 
-    it("should return all products when no filters provided", async () => {
+    it("should return all products when no filters provided [EP: Valid - No filters]", async () => {
       const req = {
         body: {
           checked: [],
@@ -721,6 +798,88 @@ describe("ProductController", () => {
       await productFiltersController(req, res);
 
       expect(productModel.find).toHaveBeenCalledWith({});
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    // ========================================
+    // BOUNDARY VALUE ANALYSIS (BVA) TEST CASES
+    // ========================================
+    // Boundary: Price range boundaries at 0 (minimum price)
+    // Testing: Below boundary (negative), At boundary (0), Above boundary (positive)
+
+    it("should handle zero price boundary [BVA: 0 - At boundary]", async () => {
+      const req = {
+        body: {
+          checked: [],
+          radio: [0, 100], // Starting from 0 price
+        },
+      };
+      const res = mockResponse();
+
+      productModel.find.mockResolvedValue(mockProducts);
+
+      await productFiltersController(req, res);
+
+      expect(productModel.find).toHaveBeenCalledWith({
+        price: { $gte: 0, $lte: 100 },
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("should handle negative price boundary [BVA: -1 - Below boundary]", async () => {
+      const req = {
+        body: {
+          checked: [],
+          radio: [-1, 50], // Negative starting price
+        },
+      };
+      const res = mockResponse();
+
+      productModel.find.mockResolvedValue([]);
+
+      await productFiltersController(req, res);
+
+      expect(productModel.find).toHaveBeenCalledWith({
+        price: { $gte: -1, $lte: 50 },
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("should handle same min and max price [BVA: Equal boundaries]", async () => {
+      const req = {
+        body: {
+          checked: [],
+          radio: [100, 100], // Same min and max price
+        },
+      };
+      const res = mockResponse();
+
+      productModel.find.mockResolvedValue([]);
+
+      await productFiltersController(req, res);
+
+      expect(productModel.find).toHaveBeenCalledWith({
+        price: { $gte: 100, $lte: 100 },
+      });
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it("should handle very large price values [BVA: Large numbers]", async () => {
+      const req = {
+        body: {
+          checked: [],
+          radio: [999999, 1000000], // Very large price range
+        },
+      };
+      const res = mockResponse();
+
+      productModel.find.mockResolvedValue([]);
+
+      await productFiltersController(req, res);
+
+      expect(productModel.find).toHaveBeenCalledWith({
+        price: { $gte: 999999, $lte: 1000000 },
+      });
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
@@ -749,7 +908,13 @@ describe("ProductController", () => {
   });
 
   describe("createProductController", () => {
-    it("should return error if name is missing", async () => {
+    // ========================================
+    // EQUIVALENCE PARTITIONING TEST CASES
+    // ========================================
+    // Partition 1: INVALID - Missing Required Fields
+    // Each test represents one invalid partition where a required field is missing
+
+    it("should return error if name is missing [EP: Invalid - Missing Name]", async () => {
       const req = {
         fields: {
           description: "Test description",
@@ -767,7 +932,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith({ error: "Name is Required" });
     });
 
-    it("should return error if description is missing", async () => {
+    it("should return error if description is missing [EP: Invalid - Missing Description]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -787,7 +952,7 @@ describe("ProductController", () => {
       });
     });
 
-    it("should return error if price is missing", async () => {
+    it("should return error if price is missing [EP: Invalid - Missing Price]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -805,7 +970,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith({ error: "Price is Required" });
     });
 
-    it("should return error if category is missing", async () => {
+    it("should return error if category is missing [EP: Invalid - Missing Category]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -823,7 +988,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith({ error: "Category is Required" });
     });
 
-    it("should return error if quantity is missing", async () => {
+    it("should return error if quantity is missing [EP: Invalid - Missing Quantity]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -841,7 +1006,115 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith({ error: "Quantity is Required" });
     });
 
-    it("should return error if photo size exceeds 1MB", async () => {
+    // ========================================
+    // BOUNDARY VALUE ANALYSIS (BVA) TEST CASES
+    // ========================================
+    // Boundary: Photo size limit = 1,000,000 bytes (1MB)
+    // Testing: Just below (999999), At boundary (1000000), Just above (1000001)
+
+    it("should accept photo just below 1MB boundary [BVA: 999999 bytes - Valid]", async () => {
+      const req = {
+        fields: {
+          name: "Test Product",
+          description: "Test description",
+          price: 100,
+          category: "123",
+          quantity: 10,
+          shipping: true,
+        },
+        files: {
+          photo: {
+            size: 999999, // Just below 1MB boundary - should be valid
+            path: "/tmp/test.jpg",
+            type: "image/jpeg",
+          },
+        },
+      };
+      const res = mockResponse();
+
+      slugify.mockReturnValue("test-product");
+      fs.readFileSync.mockReturnValue(Buffer.from("fake-image-data"));
+
+      const mockSave = jest.fn().mockResolvedValue({
+        ...req.fields,
+        slug: "test-product",
+        photo: {
+          data: Buffer.from("fake-image-data"),
+          contentType: "image/jpeg",
+        },
+      });
+
+      productModel.mockImplementation(() => ({
+        save: mockSave,
+        photo: {},
+      }));
+
+      await createProductController(req, res);
+
+      expect(slugify).toHaveBeenCalledWith("Test Product");
+      expect(fs.readFileSync).toHaveBeenCalledWith("/tmp/test.jpg");
+      expect(mockSave).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Product Created Successfully",
+        })
+      );
+    });
+
+    it("should accept photo exactly at 1MB boundary [BVA: 1000000 bytes - Valid]", async () => {
+      const req = {
+        fields: {
+          name: "Test Product",
+          description: "Test description",
+          price: 100,
+          category: "123",
+          quantity: 10,
+          shipping: true,
+        },
+        files: {
+          photo: {
+            size: 1000000, // Exactly at 1MB boundary - should be valid
+            path: "/tmp/test.jpg",
+            type: "image/jpeg",
+          },
+        },
+      };
+      const res = mockResponse();
+
+      slugify.mockReturnValue("test-product");
+      fs.readFileSync.mockReturnValue(Buffer.from("fake-image-data"));
+
+      const mockSave = jest.fn().mockResolvedValue({
+        ...req.fields,
+        slug: "test-product",
+        photo: {
+          data: Buffer.from("fake-image-data"),
+          contentType: "image/jpeg",
+        },
+      });
+
+      productModel.mockImplementation(() => ({
+        save: mockSave,
+        photo: {},
+      }));
+
+      await createProductController(req, res);
+
+      expect(slugify).toHaveBeenCalledWith("Test Product");
+      expect(fs.readFileSync).toHaveBeenCalledWith("/tmp/test.jpg");
+      expect(mockSave).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Product Created Successfully",
+        })
+      );
+    });
+
+    it("should return error if photo size exceeds 1MB [BVA: 1000001 bytes - Invalid]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -868,7 +1141,12 @@ describe("ProductController", () => {
       });
     });
 
-    it("should create product successfully with photo", async () => {
+    // ========================================
+    // EQUIVALENCE PARTITIONING - VALID PARTITIONS
+    // ========================================
+    // Partition 2: VALID - All required fields present with photo
+
+    it("should create product successfully with photo [EP: Valid - All fields + photo]", async () => {
       const req = {
         fields: {
           name: "Test Product",
@@ -919,7 +1197,8 @@ describe("ProductController", () => {
       );
     });
 
-    it("should create product successfully without photo", async () => {
+    // Partition 3: VALID - All required fields present without photo
+    it("should create product successfully without photo [EP: Valid - All fields, no photo]", async () => {
       const req = {
         fields: {
           name: "Test Product",
