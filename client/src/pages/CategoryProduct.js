@@ -3,31 +3,26 @@ import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/CategoryProductStyles.css";
 import axios from "axios";
-
 const CategoryProduct = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
 
-  const getProductsByCat = async () => {
+  useEffect(() => {
+    if (params?.slug) getPrductsByCat();
+  }, [params?.slug]);
+  const getPrductsByCat = async () => {
     try {
       const { data } = await axios.get(
         `/api/v1/product/product-category/${params.slug}`
       );
-      setProducts(data?.products || []);
-      setCategory(data?.category || {});
+      setProducts(data?.products);
+      setCategory(data?.category);
     } catch (error) {
       console.log(error);
-      setProducts([]);
-      setCategory({});
     }
   };
-
-  useEffect(() => {
-    if (params?.slug) getProductsByCat();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params?.slug]);
 
   return (
     <Layout>
@@ -42,26 +37,20 @@ const CategoryProduct = () => {
                   <img
                     src={`/api/v1/product/product-photo/${p._id}`}
                     className="card-img-top"
-                    alt={p.name || "Product"}
+                    alt={p.name}
                   />
                   <div className="card-body">
                     <div className="card-name-price">
-                      <h5 className="card-title">
-                        {p.name || "Unnamed Product"}
-                      </h5>
+                      <h5 className="card-title">{p.name}</h5>
                       <h5 className="card-title card-price">
-                        {p.price
-                          ? p.price.toLocaleString("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                            })
-                          : "$0.00"}
+                        {p.price.toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        })}
                       </h5>
                     </div>
                     <p className="card-text ">
-                      {p.description
-                        ? `${p.description.substring(0, 60)}...`
-                        : "No description available"}
+                      {p.description.substring(0, 60)}...
                     </p>
                     <div className="card-name-price">
                       <button
