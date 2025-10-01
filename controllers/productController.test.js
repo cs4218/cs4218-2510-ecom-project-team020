@@ -562,7 +562,8 @@ describe("ProductController", () => {
     // BOUNDARY VALUE ANALYSIS (BVA) TEST CASES
     // ========================================
     // Boundary: Page number boundary at 1 (minimum valid page)
-    // Testing: Below boundary (0), At boundary (1), Above boundary (2)
+    // Testing: Below boundary (0, -1), Large boundary (1000)
+    // Note: Page 1 and 2 are covered in EP tests above with full response validation
 
     it("should handle page 0 gracefully [BVA: 0 - Below boundary]", async () => {
       const req = { params: { page: 0 } };
@@ -602,7 +603,7 @@ describe("ProductController", () => {
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it("should handle large page numbers [BVA: Large number - Above normal range]", async () => {
+    it("should handle large page numbers [BVA: 1000 - Large boundary]", async () => {
       const req = { params: { page: 1000 } };
       const res = mockResponse();
 
@@ -615,6 +616,7 @@ describe("ProductController", () => {
 
       await productListController(req, res);
 
+      // Page 1000 calculation: (1000-1)*6 = 5994
       expect(skipMock).toHaveBeenCalledWith(5994); // (1000 - 1) * 6 = 5994
       expect(limitMock).toHaveBeenCalledWith(6);
       expect(res.status).toHaveBeenCalledWith(200);
