@@ -39,7 +39,7 @@ app.use(express.json());
 app.use("/", router);
 
 describe("categoryRoutes wiring", () => {
-  c
+  
   // test("POST /create-category runs auth middlewares then controller", async () => {
   // });
 
