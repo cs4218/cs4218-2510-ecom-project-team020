@@ -9,16 +9,6 @@ jest.mock("./context/auth", () => ({
   useAuth: jest.fn(() => [null, jest.fn()]),
 }));
 
-// Mock window objects for all tests
-Object.defineProperty(window, "localStorage", {
-  value: {
-    setItem: jest.fn(),
-    getItem: jest.fn(),
-    removeItem: jest.fn(),
-  },
-  writable: true,
-});
-
 window.matchMedia =
   window.matchMedia ||
   function () {
