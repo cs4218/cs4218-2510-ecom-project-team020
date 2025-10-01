@@ -1,3 +1,4 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import {
   registerController,
   loginController,
@@ -69,7 +70,7 @@ describe("Auth Controllers", () => {
 
       await registerController(req, res);
 
-      expect(res.send).toHaveBeenCalledWith({ message: "Phone no is Required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "Phone Number is Required" });
     });
 
     it("should return error if address is missing", async () => {
@@ -111,7 +112,7 @@ describe("Auth Controllers", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Already Register please login",
+          message: "Already Registered Please Login",
         })
       );
     });
@@ -236,7 +237,7 @@ describe("Auth Controllers", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in login",
+          message: "Error Logging In",
           error: expect.any(Error),
         })
       );
@@ -251,7 +252,7 @@ describe("Auth Controllers", () => {
       await forgotPasswordController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "Emai is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "Email is Required" });
     });
 
     it("should fail if answer is missing", async () => {
@@ -261,7 +262,7 @@ describe("Auth Controllers", () => {
       await forgotPasswordController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "answer is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "Answer is Required" });
     });
 
     it("should fail if new password is missing", async () => {
@@ -271,7 +272,7 @@ describe("Auth Controllers", () => {
       await forgotPasswordController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "New Password is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "New Password is Required" });
     });
 
     it("should fail if user not found", async () => {
@@ -363,7 +364,7 @@ describe("Auth Controllers", () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true, message: "Profile Updated SUccessfully" })
+        expect.objectContaining({ success: true, message: "Profile Updated Successfully" })
       );
     });
 
@@ -382,7 +383,7 @@ describe("Auth Controllers", () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true, message: "Profile Updated SUccessfully" })
+        expect.objectContaining({ success: true, message: "Profile Updated Successfully" })
       );
     });
 
@@ -400,7 +401,7 @@ describe("Auth Controllers", () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true, message: "Profile Updated SUccessfully" })
+        expect.objectContaining({ success: true, message: "Profile Updated Successfully" })
       );
     });
   });
@@ -440,7 +441,7 @@ describe("Auth Controllers", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error WHile Geting Orders",
+          message: "Error Getting Orders",
           error: expect.any(Error),
         })
       );
@@ -482,7 +483,7 @@ describe("Auth Controllers", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error WHile Geting Orders",
+          message: "Error Getting Orders",
           error: expect.any(Error),
         })
       );
@@ -518,7 +519,7 @@ describe("Auth Controllers", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error While Updateing Order",
+          message: "Error Updating Order",
           error: expect.any(Error),
         })
       );

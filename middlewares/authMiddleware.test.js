@@ -1,3 +1,4 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import JWT from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import { requireSignIn, isAdmin } from "../middlewares/authMiddleware.js";
@@ -88,7 +89,7 @@ describe("isAdmin", () => {
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        message: "UnAuthorized Access",
+        message: "Unauthorized Access",
       })
     );
     expect(next).not.toHaveBeenCalled();
@@ -103,7 +104,7 @@ describe("isAdmin", () => {
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        message: "Error in admin middleware",
+        message: "Something went wrong",
       })
     );
     expect(next).not.toHaveBeenCalled();
