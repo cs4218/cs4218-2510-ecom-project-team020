@@ -1,10 +1,12 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import { renderHook, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import axios from 'axios';
 
 import useCategory from './useCategory';
 
+// Mock axios
 jest.mock('axios');
+const mockedAxios = axios;
 
 describe('useCategory hook', () => {
   const endpoint = '/api/v1/category/get-category';
@@ -13,7 +15,14 @@ describe('useCategory hook', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('initially returns an empty array', () => {
+    // Mock to prevent effect completion
+    mockedAxios.get.mockReturnValue(new Promise(() => {}));
+    
     const { result } = renderHook(() => useCategory());
     expect(result.current).toEqual([]);
   });
@@ -23,31 +32,50 @@ describe('useCategory hook', () => {
       { _id: '1', name: 'Electronics', slug: 'electronics' },
       { _id: '2', name: 'Books', slug: 'books' },
     ];
-    axios.get.mockResolvedValueOnce({ data: { categories: mockCategories } });
+    
+    // Setup mock before rendering
+    mockedAxios.get.mockResolvedValue({ 
+      data: { categories: mockCategories } 
+    });
 
     const { result } = renderHook(() => useCategory());
 
+    // First verify axios was called
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+    });
+
+    // Then verify the state updated
     await waitFor(() => {
       expect(result.current).toEqual(mockCategories);
     });
 
-    expect(axios.get).toHaveBeenCalledTimes(1);
-    expect(axios.get).toHaveBeenCalledWith(endpoint);
+    expect(mockedAxios.get).toHaveBeenCalledWith(endpoint);
   });
 
   it('logs error when API request fails', async () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    axios.get.mockRejectedValueOnce(new Error('Server error'));
+    const mockError = new Error('Server error');
+    
+    // Setup mock to reject
+    mockedAxios.get.mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useCategory());
 
+    // Wait for axios to be called
     await waitFor(() => {
-      // ensure that state remains unchanged
-      expect(result.current).toEqual([]);
-      expect(consoleSpy).toHaveBeenCalled(); 
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
     });
 
+    // Wait for console.log to be called
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    });
+
+    // Verify state remains empty
+    expect(result.current).toEqual([]);
+    expect(mockedAxios.get).toHaveBeenCalledWith(endpoint);
+
     consoleSpy.mockRestore();
-    expect(axios.get).toHaveBeenCalledWith(endpoint);
   });
 });
