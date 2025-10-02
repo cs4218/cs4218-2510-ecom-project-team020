@@ -18,13 +18,22 @@ jest.mock("../context/auth", () => ({
   useAuth: jest.fn(() => [null, jest.fn()]),
 }));
 
+const mockSetCart = jest.fn();
 jest.mock("../context/cart", () => ({
-  useCart: jest.fn(() => [null, jest.fn()]),
+  useCart: jest.fn(),
 }));
 
 jest.mock("../context/search", () => ({
   useSearch: jest.fn(() => [{ keyword: "" }, jest.fn()]),
 }));
+
+// Mock react-hot-toast
+jest.mock("react-hot-toast", () => ({
+  success: jest.fn(),
+}));
+
+const { useCart } = require("../context/cart");
+const toast = require("react-hot-toast");
 
 // Mock react-router-dom hooks
 const mockNavigate = jest.fn();
@@ -96,10 +105,24 @@ const renderProductDetails = (slug = "test-product") => {
 };
 
 describe("ProductDetails Component", () => {
+  // Mock localStorage
+  const localStorageMock = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockNavigate.mockClear();
+    mockSetCart.mockClear();
+    toast.success.mockClear();
     axios.get.mockReset();
+    localStorageMock.setItem.mockClear();
+
+    // Reset cart mock with fresh empty array each time
+    useCart.mockReturnValue([[], mockSetCart]);
+
     // Suppress console.error for act warnings and console.log for errors in tests
     jest.spyOn(console, "error").mockImplementation(() => {});
     jest.spyOn(console, "log").mockImplementation(() => {});
@@ -528,6 +551,291 @@ describe("ProductDetails Component", () => {
         2,
         `/api/v1/product/related-product/${mockProduct._id}/${mockProduct.category._id}`
       );
+    });
+  });
+
+  describe("Button Functionality (Bug Fix)", () => {
+    describe("Main Product ADD TO CART Button", () => {
+      it("should add product to cart when ADD TO CART button is clicked", async () => {
+        // Mock localStorage for this test
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+          writable: true,
+        });
+
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded (not just the button to appear)
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        const addToCartButton = screen.getByText("ADD TO CART");
+        fireEvent.click(addToCartButton);
+
+        expect(mockSetCart).toHaveBeenCalledWith([mockProduct]);
+      });
+
+      it("should save cart to localStorage when item is added", async () => {
+        // Mock localStorage for this test
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+          writable: true,
+        });
+
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        const addToCartButton = screen.getByText("ADD TO CART");
+        fireEvent.click(addToCartButton);
+
+        expect(localStorageMock.setItem).toHaveBeenCalledWith(
+          "cart",
+          JSON.stringify([mockProduct])
+        );
+      });
+
+      it("should show success toast when item is added to cart", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        const addToCartButton = screen.getByText("ADD TO CART");
+        fireEvent.click(addToCartButton);
+
+        expect(toast.success).toHaveBeenCalledWith("Item Added to cart");
+      });
+
+      it("should handle adding product with existing cart items", async () => {
+        const existingCart = [
+          { _id: "existing1", name: "Existing Product", price: 50 },
+        ];
+
+        useCart.mockReturnValue([existingCart, mockSetCart]);
+
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        const addToCartButton = screen.getByText("ADD TO CART");
+        fireEvent.click(addToCartButton);
+
+        expect(mockSetCart).toHaveBeenCalledWith([
+          ...existingCart,
+          mockProduct,
+        ]);
+      });
+    });
+
+    describe("Related Products ADD TO CART Buttons", () => {
+      it("should add related product to cart when ADD TO CART is clicked", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: mockRelatedProducts },
+          });
+
+        renderProductDetails();
+
+        await waitFor(() => {
+          expect(screen.getAllByText("ADD TO CART")).toHaveLength(3); // 1 main + 2 related
+        });
+
+        const addToCartButtons = screen.getAllByText("ADD TO CART");
+        // Click the first related product's ADD TO CART button (index 1, since 0 is main product)
+        fireEvent.click(addToCartButtons[1]);
+
+        expect(mockSetCart).toHaveBeenCalledWith([mockRelatedProducts[0]]);
+        expect(toast.success).toHaveBeenCalledWith("Item Added to cart");
+      });
+
+      it("should handle multiple related product additions", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: mockRelatedProducts },
+          });
+
+        renderProductDetails();
+
+        await waitFor(() => {
+          expect(screen.getAllByText("ADD TO CART")).toHaveLength(3);
+        });
+
+        const addToCartButtons = screen.getAllByText("ADD TO CART");
+
+        // Add first related product
+        fireEvent.click(addToCartButtons[1]);
+        expect(mockSetCart).toHaveBeenCalledWith([mockRelatedProducts[0]]);
+
+        // Add second related product
+        fireEvent.click(addToCartButtons[2]);
+        expect(mockSetCart).toHaveBeenCalledWith([mockRelatedProducts[1]]);
+
+        expect(toast.success).toHaveBeenCalledTimes(2);
+      });
+
+      it("should save related products to localStorage", async () => {
+        // Mock localStorage for this test
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+          writable: true,
+        });
+
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: mockRelatedProducts },
+          });
+
+        renderProductDetails();
+
+        await waitFor(() => {
+          expect(screen.getAllByText("ADD TO CART")).toHaveLength(3);
+        });
+
+        const addToCartButtons = screen.getAllByText("ADD TO CART");
+        fireEvent.click(addToCartButtons[1]); // First related product
+
+        expect(localStorageMock.setItem).toHaveBeenCalledWith(
+          "cart",
+          JSON.stringify([mockRelatedProducts[0]])
+        );
+      });
+    });
+
+    describe("Button Integration Tests", () => {
+      it("should handle both main and related product cart additions", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: mockRelatedProducts },
+          });
+
+        renderProductDetails();
+
+        await waitFor(() => {
+          expect(screen.getAllByText("ADD TO CART")).toHaveLength(3);
+        });
+
+        const addToCartButtons = screen.getAllByText("ADD TO CART");
+
+        // Add main product
+        fireEvent.click(addToCartButtons[0]);
+        expect(mockSetCart).toHaveBeenCalledWith([mockProduct]);
+
+        // Add related product
+        fireEvent.click(addToCartButtons[1]);
+        expect(mockSetCart).toHaveBeenCalledWith([mockRelatedProducts[0]]);
+
+        expect(toast.success).toHaveBeenCalledTimes(2);
+      });
+
+      it("should handle rapid button clicks", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        const addToCartButton = screen.getByText("ADD TO CART");
+
+        // Simulate rapid clicks
+        fireEvent.click(addToCartButton);
+        fireEvent.click(addToCartButton);
+        fireEvent.click(addToCartButton);
+
+        expect(mockSetCart).toHaveBeenCalledTimes(3);
+        expect(toast.success).toHaveBeenCalledTimes(3);
+      });
+    });
+
+    describe("Hook Integration", () => {
+      it("should properly use useCart hook", async () => {
+        axios.get
+          .mockResolvedValueOnce({
+            data: { product: mockProduct },
+          })
+          .mockResolvedValueOnce({
+            data: { products: [] },
+          });
+
+        renderProductDetails();
+
+        // Wait for the product data to be loaded
+        await waitFor(() => {
+          expect(screen.getByText(/Name : Test Product/)).toBeInTheDocument();
+        });
+
+        expect(useCart).toHaveBeenCalled();
+      });
+
+      it("should handle cart context errors gracefully", () => {
+        useCart.mockImplementation(() => {
+          throw new Error("Cart context error");
+        });
+
+        expect(() => renderProductDetails()).toThrow("Cart context error");
+      });
     });
   });
 });
