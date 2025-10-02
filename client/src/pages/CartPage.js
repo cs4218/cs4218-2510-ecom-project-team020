@@ -17,29 +17,33 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  //total price
-  const totalPrice = () => {
+  // Calculates total price in cart
+  const getTotalPrice = () => {
     try {
-      let total = 0;
-      cart?.map((item) => {
-        total = total + item.price;
-      });
-      return total.toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-      });
+      const total = cart.reduce((sum, item, i) => {
+        const price = item?.price;
+
+        if (typeof price !== "number" || !Number.isFinite(price) || price < 0) {
+          throw new TypeError(`Invalid price at index ${i}: ${price}`);
+        }
+        return sum + price;
+      }, 0);
+      return total.toLocaleString("en-US", { style: "currency", currency: "USD" });
     } catch (error) {
       console.log(error);
     }
   };
-  //detele item
+
+  //delete item
   const removeCartItem = (pid) => {
     try {
       let myCart = [...cart];
       let index = myCart.findIndex((item) => item._id === pid);
-      myCart.splice(index, 1);
-      setCart(myCart);
-      localStorage.setItem("cart", JSON.stringify(myCart));
+      if (index !== -1) {
+        myCart.splice(index, 1);
+        setCart(myCart);
+        localStorage.setItem("cart", JSON.stringify(myCart));
+      }
     } catch (error) {
       console.log(error);
     }
@@ -88,9 +92,8 @@ const CartPage = () => {
                 : `Hello  ${auth?.token && auth?.user?.name}`}
               <p className="text-center">
                 {cart?.length
-                  ? `You Have ${cart.length} items in your cart ${
-                      auth?.token ? "" : "please login to checkout !"
-                    }`
+                  ? `You Have ${cart.length} items in your cart ${auth?.token ? "" : "please login to checkout !"
+                  }`
                   : " Your Cart Is Empty"}
               </p>
             </h1>
@@ -130,7 +133,7 @@ const CartPage = () => {
               <h2>Cart Summary</h2>
               <p>Total | Checkout | Payment</p>
               <hr />
-              <h4>Total : {totalPrice()} </h4>
+              <h4>Total : {getTotalPrice()} </h4>
               {auth?.user?.address ? (
                 <>
                   <div className="mb-3">
