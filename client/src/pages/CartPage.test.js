@@ -242,5 +242,65 @@ describe("CartPage Component", () => {
     });
   });
 
-  
+  describe("getToken and Braintree integration", () => {
+    const endpoint = "/api/v1/product/braintree/token";
+
+    it("calls axios.get with correct endpoint on mount", async () => {
+      useCart.mockReturnValue([[], jest.fn()]);
+
+      render(<CartPage />);
+
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledWith(endpoint);
+        expect(axios.get).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("logs error when axios.get fails", async () => {
+      const mockError = new Error("Server error");
+      axios.get.mockRejectedValue(mockError);
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+      useCart.mockReturnValue([[], jest.fn()]);
+
+      render(<CartPage />);
+
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledWith(endpoint);
+        expect(logSpy).toHaveBeenCalledWith(mockError);
+      });
+
+      logSpy.mockRestore();
+    });
+
+    it("calls getToken again when auth.token changes", async () => {
+      useCart.mockReturnValue([[], jest.fn()]);
+      useAuth.mockReturnValue([{ user: null, token: "token1" }, jest.fn()]);
+
+      const { rerender } = render(<CartPage />);
+      await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(1));
+
+      useAuth.mockReturnValue([{ user: { name: "Test" }, token: "token2" }, jest.fn()]);
+      rerender(<CartPage />);
+
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledTimes(2);
+        expect(axios.get).toHaveBeenCalledWith(endpoint);
+      });
+    });
+
+    it("does not call getToken again when auth.token stays the same", async () => {
+      useCart.mockReturnValue([[], jest.fn()]);
+      useAuth.mockReturnValue([{ user: null, token: "token1" }, jest.fn()]);
+
+      const { rerender } = render(<CartPage />);
+      await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(1));
+
+      useAuth.mockReturnValue([{ user: { name: "Test" }, token: "token1" }, jest.fn()]);
+      rerender(<CartPage />);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      expect(axios.get).toHaveBeenCalledTimes(1);
+    });
+  });
 });
