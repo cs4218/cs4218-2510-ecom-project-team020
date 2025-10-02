@@ -129,6 +129,10 @@ export const forgotPasswordController = async (req, res) => {
     if (!newPassword) {
       res.status(400).send({ message: "New Password is Required" });
     }
+
+    if (newPassword.length < 6) {
+      return res.json({ error: "Passsword is required and at least 6 characters long" });
+    }
     //check
     const user = await userModel.findOne({ email, answer });
     //validation
@@ -170,9 +174,8 @@ export const updateProfileController = async (req, res) => {
     const { name, email, password, address, phone } = req.body;
     const user = await userModel.findById(req.user._id);
     //password
-    // TODO: UPDATE THIS TO MATCH FRONTEND VALIDATION
     if (password && password.length < 6) {
-      return res.json({ error: "Passsword is required and 6 character long" });
+      return res.json({ error: "Passsword is required and at least 6 characters long" });
     }
     const hashedPassword = password ? await hashPassword(password) : undefined;
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -219,6 +222,7 @@ export const getOrdersController = async (req, res) => {
 };
 //orders
 export const getAllOrdersController = async (req, res) => {
+
   try {
     const orders = await orderModel
       .find({})
@@ -241,11 +245,47 @@ export const orderStatusController = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
+
+    if (!orderId) {
+      return res.status(400).send({
+        success: false,
+        message: "Order ID is required",
+      });
+    }
+
+    if (!status) {
+      return res.status(400).send({
+        success: false,
+        message: "Status is required",
+      });
+    }
+
+    const validStatuses = orderModel.schema.path('status').enumValues;
+    
+    const normalizedStatus = validStatuses.find(
+      validStatus => validStatus.toLowerCase() === status.toLowerCase()
+    );
+
+    if (!normalizedStatus) {
+      return res.status(400).send({
+        success: false,
+        message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`,
+      });
+    }
+
     const orders = await orderModel.findByIdAndUpdate(
       orderId,
-      { status },
+      { status: normalizedStatus },
       { new: true }
     );
+
+    if (!orders) {
+      return res.status(404).send({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
     res.json(orders);
   } catch (error) {
     console.log(error);
