@@ -119,7 +119,7 @@ const HomePage = () => {
       <div className="container-fluid row mt-3 home-page">
         <div className="col-md-3 filters">
           <h4 className="text-center">Filter By Category</h4>
-          <div className="d-flex flex-column">
+          <div className="d-flex flex-column selector">
             {categories?.map((c) => (
               <Checkbox
                 key={c._id}
@@ -131,7 +131,7 @@ const HomePage = () => {
           </div>
           {/* price filter */}
           <h4 className="text-center mt-4">Filter By Price</h4>
-          <div className="d-flex flex-column">
+          <div className="d-flex flex-column selector">
             <Radio.Group onChange={(e) => setRadio(e.target.value)}>
               {Prices?.map((p) => (
                 <div key={p._id}>
@@ -175,7 +175,11 @@ const HomePage = () => {
                   <div className="card-name-price">
                     <button
                       className="btn btn-info ms-1"
-                      onClick={() => navigate(`/product/${p.slug}`)}
+                      onClick={() => {
+                        if (p.slug) {
+                          navigate(`/product/${p.slug}`);
+                        }
+                      }}
                     >
                       More Details
                     </button>
@@ -210,8 +214,9 @@ const HomePage = () => {
                   "Loading ..."
                 ) : (
                   <>
-                    {" "}
-                    Loadmore <AiOutlineReload />
+                    <div className="d-flex align-items-center justify-content-center gap-2">
+                      Load More <AiOutlineReload />
+                    </div>
                   </>
                 )}
               </button>
