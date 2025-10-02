@@ -11,7 +11,7 @@ const CreateCategory = () => {
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState(null);
   const [updatedName, setUpdatedName] = useState("");
-  //handle Form
+  // Handle category creation form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -19,18 +19,19 @@ const CreateCategory = () => {
         name,
       });
       if (data?.success) {
-        toast.success(`${name} is created`);
+        toast.success(`Category "${name}" created successfully`);
+        setName("");
         getAllCategories();
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error("somthing went wrong in input form");
+      toast.error("Failed to create category. Please check your input and try again.");
     }
   };
 
-  //get all cat
+  // Fetch all categories from the API
   const getAllCategories = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
@@ -39,7 +40,7 @@ const CreateCategory = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong in getting category");
+      toast.error("Failed to load categories. Please refresh the page and try again.");
     }
   };
 
@@ -47,7 +48,7 @@ const CreateCategory = () => {
     getAllCategories();
   }, []);
 
-  //update category
+  // Handle category update submission
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
@@ -56,7 +57,7 @@ const CreateCategory = () => {
         { name: updatedName }
       );
       if (data.success) {
-        toast.success(`${updatedName} is updated`);
+        toast.success(`Category "${updatedName}" updated successfully`);
         setSelected(null);
         setUpdatedName("");
         setVisible(false);
@@ -65,24 +66,24 @@ const CreateCategory = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Somtihing went wrong");
+      toast.error("Failed to update category. Please try again.");
     }
   };
-  //delete category
-  const handleDelete = async (pId) => {
+  // Handle category deletion
+  const handleDelete = async (categoryId) => {
     try {
       const { data } = await axios.delete(
-        `/api/v1/category/delete-category/${pId}`
+        `/api/v1/category/delete-category/${categoryId}`
       );
       if (data.success) {
-        toast.success(`category is deleted`);
+        toast.success("Category deleted successfully");
 
         getAllCategories();
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Somtihing went wrong");
+      toast.error("Failed to delete category. Please try again.");
     }
   };
   return (
@@ -111,9 +112,8 @@ const CreateCategory = () => {
                 </thead>
                 <tbody>
                   {categories?.map((c) => (
-                    <>
-                      <tr>
-                        <td key={c._id}>{c.name}</td>
+                      <tr key={c._id}>
+                        <td>{c.name}</td>
                         <td>
                           <button
                             className="btn btn-primary ms-2"
@@ -135,7 +135,6 @@ const CreateCategory = () => {
                           </button>
                         </td>
                       </tr>
-                    </>
                   ))}
                 </tbody>
               </table>
@@ -143,7 +142,8 @@ const CreateCategory = () => {
             <Modal
               onCancel={() => setVisible(false)}
               footer={null}
-              visible={visible}
+              open={visible}
+              title="Update Category"
             >
               <CategoryForm
                 value={updatedName}
