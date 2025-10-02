@@ -4,22 +4,51 @@ import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import CartPage from "./CartPage";
+import { describe } from "node:test";
 
 // Mock imports
 jest.mock("../components/Layout", () => ({ children }) => <div>{children}</div>);
-jest.mock("react-router-dom", () => ({ useNavigate: () => jest.fn() }));
-jest.mock("braintree-web-drop-in-react", () => () => <div data-testid="dropin" />);
+jest.mock("react-router-dom", () => {
+  const navigate = jest.fn();
+  return {
+    mockNavigate: navigate,
+    useNavigate: () => navigate,
+  };
+});
+
 jest.mock("../context/cart", () => ({
   useCart: jest.fn(),
 }));
 jest.mock("../context/auth", () => ({
   useAuth: jest.fn(),
 }));
+jest.mock("react-hot-toast", () => ({ success: jest.fn(), error: jest.fn() }));
 jest.mock("axios");
+
+jest.mock("braintree-web-drop-in-react", () => {
+  const React = require("react");
+  const holder = { instance: null };
+
+  function MockDropIn(props) {
+    React.useEffect(() => {
+      if (props.onInstance && holder.instance) {
+        props.onInstance(holder.instance);
+      }
+    }, [props.onInstance]);
+    return <div data-testid="dropin" />;
+  }
+  return {
+    __esModule: true,
+    default: MockDropIn,
+    __setInstance(inst) { holder.instance = inst; },
+  };
+});
 
 describe("CartPage Component", () => {
   const { useCart } = require("../context/cart");
   const { useAuth } = require("../context/auth");
+  const { mockNavigate } = require("react-router-dom");
+  const DropInModule = require("braintree-web-drop-in-react");
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -242,7 +271,7 @@ describe("CartPage Component", () => {
     });
   });
 
-  describe("getToken and Braintree integration", () => {
+  describe("getToken", () => {
     const endpoint = "/api/v1/product/braintree/token";
 
     it("calls axios.get with correct endpoint on mount", async () => {
@@ -302,5 +331,107 @@ describe("CartPage Component", () => {
 
       expect(axios.get).toHaveBeenCalledTimes(1);
     });
+  });
+  describe("handlePayment", () => {
+    const toast = require("react-hot-toast");
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+
+      axios.get.mockResolvedValue({ data: { clientToken: "fake-token" } });
+      useAuth.mockReturnValue([{ user: { name: "name", address: "21 Lower Kent Ridge Rd" }, token: "token" }, jest.fn()]);
+      const mockDropinInstance = {
+        requestPaymentMethod: jest.fn().mockResolvedValue({ nonce: "fake-nonce" }),
+      };
+      DropInModule.__setInstance(mockDropinInstance);
+    });
+
+    it("should show payment success path interactions", async () => {
+      const initialCart = [
+        { _id: "p1", name: "A", description: "bar", price: 1.25 },
+        { _id: "p2", name: "B", description: "foo", price: 2.5 },
+      ];
+      const setCart = jest.fn();
+
+      useCart.mockReturnValue([initialCart, setCart]);
+
+      const mockDropinInstance = {
+        requestPaymentMethod: jest.fn().mockResolvedValue({ nonce: "fake-nonce" }),
+      };
+      DropInModule.__setInstance(mockDropinInstance);
+
+      axios.post.mockResolvedValue({ data: { ok: true } });
+      const removeSpy = jest.spyOn(window.localStorage.__proto__, "removeItem");
+
+      render(<CartPage />);
+
+      // Wait for DropIn area and for button to enable (instance set)
+      await screen.findByTestId("dropin");
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /make payment/i })).toBeEnabled()
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: /make payment/i }));
+
+      expect(mockDropinInstance.requestPaymentMethod).toHaveBeenCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/braintree/payment",
+        { nonce: "fake-nonce", cart: initialCart }
+      );
+
+      await waitFor(() => {
+        expect(setCart).toHaveBeenCalledWith([]);
+        expect(removeSpy).toHaveBeenCalledWith("cart");
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
+        expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully ");
+      });
+
+      removeSpy.mockRestore();
+    });
+
+    it("should show payment failure path interactions", async () => {
+      const initialCart = [{ _id: "p1", name: "A", description: "bar", price: 1.25 }];
+      const setCart = jest.fn();
+
+      useCart.mockReturnValue([initialCart, setCart]);
+
+      const mockDropinInstance = {
+        requestPaymentMethod: jest.fn().mockResolvedValue({ nonce: "fake-nonce" }),
+      };
+      DropInModule.__setInstance(mockDropinInstance);
+
+      const err = new Error("payment failed");
+      axios.post.mockRejectedValue(err);
+      const removeSpy = jest.spyOn(window.localStorage.__proto__, "removeItem");
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
+      render(<CartPage />);
+
+      await screen.findByTestId("dropin");
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /make payment/i })).toBeEnabled()
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: /make payment/i }));
+
+      expect(mockDropinInstance.requestPaymentMethod).toHaveBeenCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/braintree/payment",
+        { nonce: "fake-nonce", cart: initialCart }
+      );
+
+      await waitFor(() => {
+        expect(logSpy).toHaveBeenCalledWith(err);
+        expect(setCart).not.toHaveBeenCalledWith([]);
+        expect(removeSpy).not.toHaveBeenCalled();
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(toast.success).not.toHaveBeenCalled();
+        expect(screen.getByRole("button", { name: /make payment/i })).toBeEnabled();
+      });
+
+      removeSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
   });
 });
