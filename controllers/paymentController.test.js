@@ -100,13 +100,14 @@ describe("PaymentController", () => {
 
   describe("brainTreePaymentController", () => {
     it("should process payment successfully", async () => {
+      const cart = [
+        { _id: "1", name: "Product 1", price: 100 },
+        { _id: "2", name: "Product 2", price: 200 },
+      ];
       const req = {
         body: {
           nonce: "test-nonce",
-          cart: [
-            { _id: "1", name: "Product 1", price: 100 },
-            { _id: "2", name: "Product 2", price: 200 },
-          ],
+          cart,
         },
         user: { _id: "user123" },
       };
@@ -138,6 +139,46 @@ describe("PaymentController", () => {
         expect.any(Function)
       );
       expect(res.json).toHaveBeenCalledWith({ ok: true });
+    });
+
+    it("should raise an error for items with negative price", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: -1 }];  
+      const req = {
+        body: {
+          nonce: "test-nonce",
+          cart,
+        },
+        user: { _id: "user123" },
+      };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+
+      await brainTreePaymentController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+    });
+
+        it("should raise an error for items with non-numeric price", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: "1" }];  
+      const req = {
+        body: {
+          nonce: "test-nonce",
+          cart,
+        },
+        user: { _id: "user123" },
+      };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+
+      await brainTreePaymentController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
     });
 
     it("should handle payment error", async () => {

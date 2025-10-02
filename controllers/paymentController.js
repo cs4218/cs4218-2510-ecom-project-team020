@@ -38,11 +38,7 @@ export const brainTreePaymentController = async (req, res) => {
         cart.reduce((sum, item, i) => {
           const price = item?.price;
 
-          if (
-            typeof price !== "number" ||
-            !Number.isFinite(price) ||
-            price < 0
-          ) {
+          if ( typeof price !== "number" || !Number.isFinite(price) || price < 0) {
             throw new TypeError(`Invalid price at index ${i}: ${price}`);
           }
           return sum + price;
