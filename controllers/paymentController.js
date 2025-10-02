@@ -16,15 +16,16 @@ var gateway = new braintree.BraintreeGateway({
 //token
 export const braintreeTokenController = async (req, res) => {
   try {
-    gateway.clientToken.generate({}, function (err, response) {
-      if (err) {
-        res.status(500).send(err);
+    gateway.clientToken.generate({}, function (error, response) {
+      if (error) {
+        res.status(500).send(error);
       } else {
         res.send(response);
       }
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -32,10 +33,21 @@ export const braintreeTokenController = async (req, res) => {
 export const brainTreePaymentController = async (req, res) => {
   try {
     const { nonce, cart } = req.body;
-    let total = 0;
-    cart.map((i) => {
-      total += i.price;
-    });
+    const total =
+      Math.round(
+        cart.reduce((sum, item, i) => {
+          const price = item?.price;
+
+          if (
+            typeof price !== "number" ||
+            !Number.isFinite(price) ||
+            price < 0
+          ) {
+            throw new TypeError(`Invalid price at index ${i}: ${price}`);
+          }
+          return sum + price;
+        }, 0) * 100
+      ) / 100;
     let newTransaction = gateway.transaction.sale(
       {
         amount: total,
@@ -44,20 +56,26 @@ export const brainTreePaymentController = async (req, res) => {
           submitForSettlement: true,
         },
       },
-      function (error, result) {
+      async function (error, result) {
         if (result) {
-          const order = new orderModel({
-            products: cart,
-            payment: result,
-            buyer: req.user._id,
-          }).save();
-          res.json({ ok: true });
+          try {
+            const order = await new orderModel({
+              products: cart,
+              payment: result,
+              buyer: req.user._id,
+            }).save();
+            res.json({ ok: true, orderId: order._id });
+          } catch (dbError) {
+            console.error("Database error:", dbError);
+            res.status(500).json({ error: "Failed to create order" });
+          }
         } else {
-          res.status(500).send(error);
+          res.status(500).json({ error: "Payment failed" });
         }
       }
     );
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
