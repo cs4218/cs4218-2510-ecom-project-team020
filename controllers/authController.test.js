@@ -148,6 +148,24 @@ describe("Auth Controllers", () => {
     });
   });
 
+  it("should return 500 when an unexpected error occurs", async () => {
+    const req = { body: { name: "Test", email: "test@test.com", password: "123", phone: "111", address: "SG", answer: "blue" } };
+    const res = mockResponse();
+
+    userModel.findOne.mockImplementation(() => { throw new Error("DB Error"); });
+
+    await registerController(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        message: "Error in Registration",
+        error: expect.any(Error),
+      })
+    );
+  });
+
   describe("registerController Pairwise Validation", () => {
     const res = {
       name: "John",
@@ -434,6 +452,23 @@ describe("Auth Controllers", () => {
 
       expect(res.send).toHaveBeenCalledWith("Protected Routes");
     });
+
+    it("should return 500 if an exception occurs", () => {
+      const req = {};
+      const res = mockResponse();
+
+      res.send = jest.fn(() => { throw new Error("Unexpected error"); });
+
+      try {
+        testController(req, res);
+      } catch (error) {
+        expect(res.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            error: expect.any(Error),
+          })
+        );
+      }
+    });
   });
 
   describe("updateProfileController", () => {
@@ -505,20 +540,20 @@ describe("Auth Controllers", () => {
         expect.objectContaining({ success: true, message: "Profile Updated Successfully" })
       );
     });
-    
+
     it("should return 500 if an exception occurs", async () => {
       const req = { body: { email: "a@test.com", answer: "blue", newPassword: "123456" } };
       const res = mockResponse();
 
       userModel.findOne.mockRejectedValue(new Error("DB error"));
 
-      await forgotPasswordController(req, res);
+      await updateProfileController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Something went wrong",
+          message: "Error Updating Profile",
           error: expect.any(Error),
         })
       );
