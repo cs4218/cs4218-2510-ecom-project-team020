@@ -1,7 +1,7 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import { renderHook } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
+import { render, screen } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { SearchProvider, useSearch } from "./search";
 
 // Note: Window objects are mocked globally in setupTests.js
