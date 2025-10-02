@@ -35,11 +35,11 @@ const CreateCategory = () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data.success) {
-        setCategories(data.category);
+        setCategories(data.categories);
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      toast.error("Something went wrong in getting category");
     }
   };
 
