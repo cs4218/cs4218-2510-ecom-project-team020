@@ -11,11 +11,13 @@ describe("requireSignIn", () => {
 
   beforeEach(() => {
     req = { headers: {} };
-    res = {};
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
     next = jest.fn();
     jest.clearAllMocks();
   });
-
 
   it("should call next() when token is valid", async () => {
     req.headers.authorization = "valid.jwt.token";
@@ -33,7 +35,7 @@ describe("requireSignIn", () => {
     JWT.verify.mockImplementation(() => {
       throw new Error("invalid token");
     });
-    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
 
     await requireSignIn(req, res, next);
@@ -46,7 +48,7 @@ describe("requireSignIn", () => {
 
   it("should handle missing token gracefully and log the error", async () => {
     req.headers.authorization = undefined;
-    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
     await requireSignIn(req, res, next);
 
@@ -55,13 +57,65 @@ describe("requireSignIn", () => {
 
     logSpy.mockRestore();
   });
+
+  it("should return 401 when authorization header is missing", async () => {
+    await requireSignIn(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Unauthorized Access" })
+    );
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("should return 401 when token is expired", async () => {
+    req.headers.authorization = "expired.token";
+    JWT.verify.mockImplementation(() => {
+      throw new Error("jwt expired");
+    });
+
+    await requireSignIn(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Unauthorized Access" })
+    );
+  });
+
+  it("should return 401 when token signature is invalid", async () => {
+    req.headers.authorization = "invalid.signature";
+    JWT.verify.mockImplementation(() => {
+      throw new Error("invalid signature");
+    });
+
+    await requireSignIn(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Unauthorized Access" })
+    );
+  });
+
+  it("should return 401 for empty string token", async () => {
+    req.headers.authorization = "";
+    JWT.verify.mockImplementation(() => {
+      throw new Error("jwt malformed");
+    });
+
+    await requireSignIn(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Unauthorized Access" })
+    );
+  });
 });
 
 describe("isAdmin", () => {
   let req, res, next;
 
   beforeEach(() => {
-    req = { user : { _id: "123" } };
+    req = { user: { _id: "123" } };
     res = {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(),
@@ -80,27 +134,78 @@ describe("isAdmin", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 
-  it("should return 401 if user.role !== 1", async () => {
+
+  it("should return 403 if user.role !== 1", async () => {
     userModel.findById.mockResolvedValue({ role: 0 });
 
     await isAdmin(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.status).toHaveBeenCalledWith(403);
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        message: "Unauthorized Access",
+        message: "Forbidden",
       })
     );
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should handle errors gracefully and return 401", async () => {
-    userModel.findById.mockRejectedValue(new Error("DB error"));
+  it("should return 404 when user not found", async () => {
+    userModel.findById.mockResolvedValue(null);
+
+    await isAdmin(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "User not found" })
+    );
+  });
+
+  it("should return 401 when user in request is undefined", async () => {
+    req.user = undefined;
 
     await isAdmin(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Unauthorized Access" })
+    );
+  });
+
+  it("should return 401 when role is missing", async () => {
+    userModel.findById.mockResolvedValue({});
+
+    await isAdmin(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Forbidden" })
+    );
+  });
+
+  it("should return 403 when role is string '1'", async () => {
+    userModel.findById.mockResolvedValue({ role: "1" });
+
+    await isAdmin(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        message: "Forbidden",
+      })
+    );
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("should return 500 when an unexpected error occurs", async () => {
+    jest.spyOn(userModel, "findById").mockImplementation(() => {
+      throw new Error("DB failure");
+    });
+
+    await isAdmin(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
