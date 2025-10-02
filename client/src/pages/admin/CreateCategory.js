@@ -20,7 +20,7 @@ const CreateCategory = () => {
       });
       if (data?.success) {
         toast.success(`${name} is created`);
-        getAllCategory();
+        getAllCategories();
       } else {
         toast.error(data.message);
       }
@@ -31,7 +31,7 @@ const CreateCategory = () => {
   };
 
   //get all cat
-  const getAllCategory = async () => {
+  const getAllCategories = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data.success) {
@@ -44,7 +44,7 @@ const CreateCategory = () => {
   };
 
   useEffect(() => {
-    getAllCategory();
+    getAllCategories();
   }, []);
 
   //update category
@@ -60,7 +60,7 @@ const CreateCategory = () => {
         setSelected(null);
         setUpdatedName("");
         setVisible(false);
-        getAllCategory();
+        getAllCategories();
       } else {
         toast.error(data.message);
       }
@@ -77,7 +77,7 @@ const CreateCategory = () => {
       if (data.success) {
         toast.success(`category is deleted`);
 
-        getAllCategory();
+        getAllCategories();
       } else {
         toast.error(data.message);
       }
