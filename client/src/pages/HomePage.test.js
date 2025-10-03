@@ -1,3 +1,4 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HomePage from "../pages/HomePage";
@@ -24,6 +25,16 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(),
 }));
+
+let consoleSpy;
+
+beforeAll(() => {
+  consoleSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+});
+
+afterAll(() => {
+  consoleSpy.mockRestore();
+});
 
 Object.defineProperty(window, 'localStorage', {
   value: {
@@ -69,7 +80,7 @@ describe("HomePage Component Render Tests", () => {
   it("renders categories and initial products", async () => {
     axios.get.mockImplementation((url) => {
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("product-list/1"))
@@ -87,7 +98,7 @@ describe("HomePage Component Render Tests", () => {
   it("handles API error gracefully when retrieving products", async () => {
     axios.get.mockImplementation((url) => {
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("product-list/1"))
@@ -97,13 +108,15 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    expect(await screen.findByText("All Products")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("All Products")).toBeInTheDocument();
+    });
   });
 
   it("handles API error gracefully when retrieving total product count", async () => {
     axios.get.mockImplementation((url) => {
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       if (url.includes("product-count"))
         return Promise.reject(new Error("API fail"));
       if (url.includes("product-list/1"))
@@ -113,7 +126,9 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    expect(await screen.findByText("Book A")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Book A")).toBeInTheDocument();
+    });
   });
 
   it("paginates products correctly with 'Load More' button rendered", async () => {
@@ -125,20 +140,22 @@ describe("HomePage Component Render Tests", () => {
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 2 } });
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       return Promise.resolve({ data: {} });
     });
 
     renderHomePage();
 
     fireEvent.click(await screen.findByText(/Load More/i));
-    expect(await screen.findByText("Book B")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Book B")).toBeInTheDocument();
+    });
   });
 
   it("does not render 'Load More' button when products length >= total", async () => {
     axios.get.mockImplementation((url) => {
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("product-list/1"))
@@ -153,13 +170,15 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    expect(screen.queryByText(/Load More/i)).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText(/Load More/i)).not.toBeInTheDocument();
+    });
   });
 
   it("handles API error in loadMore gracefully", async () => {
     axios.get.mockImplementation((url) => {
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 2 } });
       if (url.includes("product-list/1"))
@@ -175,7 +194,9 @@ describe("HomePage Component Render Tests", () => {
     fireEvent.click(loadMoreBtn);
 
     // still shows first page products
-    expect(await screen.findByText("Book A")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Book A")).toBeInTheDocument();
+    });
   });
 
   it("successfully adds product to cart and stores it in localStorage", async () => {
@@ -185,7 +206,7 @@ describe("HomePage Component Render Tests", () => {
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       return Promise.resolve({ data: {} });
     });
 
@@ -206,14 +227,18 @@ describe("HomePage Component Render Tests", () => {
     axios.get.mockResolvedValue({
       data: {
         products: [],
-        success: true, category: mockCategories
+        success: true, categories: mockCategories
       }
     });
 
     renderHomePage();
 
-    expect(screen.queryByText("Book A")).not.toBeInTheDocument();
-    expect(screen.getByText("All Products")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("Book A")).not.toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText("All Products")).toBeInTheDocument();
+    });
   });
 
   it("handles category API error gracefully", async () => {
@@ -229,7 +254,9 @@ describe("HomePage Component Render Tests", () => {
 
     renderHomePage();
 
-    expect(await screen.findByText("Book A")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Book A")).toBeInTheDocument();
+    });
   });
 
   it("navigates to product details when 'More Details' button is clicked", async () => {
@@ -239,7 +266,7 @@ describe("HomePage Component Render Tests", () => {
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       return Promise.resolve({ data: {} });
     });
 
@@ -258,7 +285,7 @@ describe("HomePage Component Render Tests", () => {
       if (url.includes("product-count"))
         return Promise.resolve({ data: { total: 1 } });
       if (url.includes("category"))
-        return Promise.resolve({ data: { success: true, category: mockCategories } });
+        return Promise.resolve({ data: { success: true, categories: mockCategories } });
       return Promise.resolve({ data: {} });
     });
 
@@ -285,7 +312,7 @@ describe("HomePage Filter Specific Tests", () => {
   });
 
   it("applies category filter only and updates listed products", async () => {
-    axios.get.mockResolvedValue({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValue({ data: { success: true, categories: mockCategories } });
     axios.post.mockResolvedValue({ data: { products: mockFilteredProducts } });
 
     renderHomePage();
@@ -297,7 +324,7 @@ describe("HomePage Filter Specific Tests", () => {
   });
 
   it("applies price filter only and updates listed products", async () => {
-    axios.get.mockResolvedValue({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValue({ data: { success: true, categories: mockCategories } });
     axios.post.mockResolvedValue({ data: { products: mockFilteredProducts } });
 
     renderHomePage();
@@ -309,18 +336,22 @@ describe("HomePage Filter Specific Tests", () => {
   });
 
   it("resets filters on RESET FILTERS button click", async () => {
-    axios.get.mockResolvedValue({ data: { success: true, category: mockCategories } });
+    const reloadMock = jest.fn();
+    delete window.location;
+    window.location = { reload: reloadMock };
+
+    axios.get.mockResolvedValue({ data: { success: true, categories: mockCategories } });
 
     renderHomePage();
 
     const resetBtn = await screen.findByRole("button", { name: /reset filters/i });
     fireEvent.click(resetBtn);
 
-    expect(resetBtn).toBeInTheDocument();
+    expect(reloadMock).toHaveBeenCalled();
   });
 
   it("handles API error gracefully when filtering products", async () => {
-    axios.get.mockResolvedValue({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValue({ data: { success: true, categories: mockCategories } });
     axios.post.mockRejectedValue(new Error("Filter API fail"));
 
     renderHomePage();
@@ -332,7 +363,7 @@ describe("HomePage Filter Specific Tests", () => {
   });
 
   it("removes category filter when unchecked", async () => {
-    axios.get.mockResolvedValue({ data: { success: true, category: mockCategories } });
+    axios.get.mockResolvedValue({ data: { success: true, categories: mockCategories } });
     axios.post.mockResolvedValue({ data: { products: mockFilteredProducts } });
 
     renderHomePage();
