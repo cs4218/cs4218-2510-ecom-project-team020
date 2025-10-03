@@ -26,13 +26,16 @@ const UpdateProduct = () => {
       const { data } = await axios.get(
         `/api/v1/product/get-product/${params.slug}`
       );
-      setName(data.product.name);
-      setId(data.product._id);
-      setDescription(data.product.description);
-      setPrice(data.product.price);
-      setQuantity(data.product.quantity);
-      setShipping(data.product.shipping);
-      setCategory(data.product.category._id);
+      const product = data.product;
+      if (product) {
+        setName(product.name || "");
+        setId(product._id || "");
+        setDescription(product.description || "");
+        setPrice(product.price || "");
+        setQuantity(product.quantity || "");
+        setShipping(!!product.shipping);
+        setCategory(product.category?._id || "");
+      }
     } catch (error) {
       console.log(error);
       toast.error("Failed to load product details. Please try again.");
@@ -70,6 +73,7 @@ const UpdateProduct = () => {
       productData.append("quantity", quantity);
       photo && productData.append("photo", photo);
       productData.append("category", category);
+      productData.append("shipping", shipping);
       const { data } = await axios.put(
         `/api/v1/product/update-product/${id}`,
         productData
@@ -121,6 +125,7 @@ const UpdateProduct = () => {
                   setCategory(value);
                 }}
                 value={category}
+                data-testid="category-select"
               >
                 {categories?.map((c) => (
                   <Option key={c._id} value={c._id}>
@@ -129,9 +134,11 @@ const UpdateProduct = () => {
                 ))}
               </Select>
               <div className="mb-3">
-                <label className="btn btn-outline-secondary col-md-12">
+                <label className="btn btn-outline-secondary col-md-12" htmlFor="photo-upload">
                   {photo ? photo.name : "Upload Photo"}
                   <input
+                    id="photo-upload"
+                    data-testid="photo-upload"
                     type="file"
                     name="photo"
                     accept="image/*"
@@ -213,9 +220,10 @@ const UpdateProduct = () => {
                   showSearch
                   className="form-select mb-3"
                   onChange={(value) => {
-                    setShipping(value);
+                    setShipping(value === "1");
                   }}
                   value={shipping ? "1" : "0"}
+                  data-testid="shipping-select"
                 >
                   <Option value="0">No</Option>
                   <Option value="1">Yes</Option>
