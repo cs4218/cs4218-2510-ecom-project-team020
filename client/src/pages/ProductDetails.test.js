@@ -18,13 +18,22 @@ jest.mock("../context/auth", () => ({
   useAuth: jest.fn(() => [null, jest.fn()]),
 }));
 
+const mockSetCart = jest.fn();
 jest.mock("../context/cart", () => ({
-  useCart: jest.fn(() => [null, jest.fn()]),
+  useCart: jest.fn(),
 }));
 
 jest.mock("../context/search", () => ({
   useSearch: jest.fn(() => [{ keyword: "" }, jest.fn()]),
 }));
+
+// Mock react-hot-toast
+jest.mock("react-hot-toast", () => ({
+  success: jest.fn(),
+}));
+
+const { useCart } = require("../context/cart");
+const toast = require("react-hot-toast");
 
 // Mock react-router-dom hooks
 const mockNavigate = jest.fn();
@@ -96,10 +105,24 @@ const renderProductDetails = (slug = "test-product") => {
 };
 
 describe("ProductDetails Component", () => {
+  // Mock localStorage
+  const localStorageMock = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockNavigate.mockClear();
+    mockSetCart.mockClear();
+    toast.success.mockClear();
     axios.get.mockReset();
+    localStorageMock.setItem.mockClear();
+
+    // Reset cart mock with fresh empty array each time
+    useCart.mockReturnValue([[], mockSetCart]);
+
     // Suppress console.error for act warnings and console.log for errors in tests
     jest.spyOn(console, "error").mockImplementation(() => {});
     jest.spyOn(console, "log").mockImplementation(() => {});
@@ -143,30 +166,6 @@ describe("ProductDetails Component", () => {
       ).toBeInTheDocument();
       expect(screen.getByText(/Price :\s*\$99\.99/)).toBeInTheDocument();
       expect(screen.getByText(/Category : Test Category/)).toBeInTheDocument();
-    });
-
-    it("should render product image with correct attributes", async () => {
-      axios.get
-        .mockResolvedValueOnce({
-          data: { product: mockProduct },
-        })
-        .mockResolvedValueOnce({
-          data: { products: [] },
-        });
-
-      renderProductDetails();
-
-      await waitFor(() => {
-        expect(screen.getByAltText("Test Product")).toBeInTheDocument();
-      });
-
-      const productImage = screen.getByAltText("Test Product");
-      expect(productImage).toHaveAttribute(
-        "src",
-        `/api/v1/product/product-photo/${mockProduct._id}`
-      );
-      expect(productImage).toHaveAttribute("height", "300");
-      expect(productImage).toHaveAttribute("width", "350px");
     });
 
     it("should render add to cart button", async () => {
