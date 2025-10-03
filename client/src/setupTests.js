@@ -5,9 +5,9 @@
 import "@testing-library/jest-dom";
 
 // Mock auth context for all tests
-jest.mock("./context/auth", () => ({
-  useAuth: jest.fn(() => [null, jest.fn()]),
-}));
+// jest.mock("./context/auth", () => ({
+//   useAuth: jest.fn(() => [null, jest.fn()]),
+// }));
 
 window.matchMedia =
   window.matchMedia ||

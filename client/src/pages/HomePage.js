@@ -36,6 +36,7 @@ const HomePage = () => {
     getAllCategory();
     getTotal();
   }, []);
+
   //get products
   const getAllProducts = async () => {
     try {
@@ -49,7 +50,7 @@ const HomePage = () => {
     }
   };
 
-  //getTOtal COunt
+  //get total count
   const getTotal = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/product-count");
@@ -63,6 +64,7 @@ const HomePage = () => {
     if (page === 1) return;
     loadMore();
   }, [page]);
+
   //load more
   const loadMore = async () => {
     try {
@@ -94,7 +96,7 @@ const HomePage = () => {
     if (checked.length || radio.length) filterProduct();
   }, [checked, radio]);
 
-  //get filterd product
+  //get filtered product
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("/api/v1/product/product-filters", {
@@ -134,9 +136,9 @@ const HomePage = () => {
           <div className="d-flex flex-column selector">
             <Radio.Group onChange={(e) => setRadio(e.target.value)}>
               {Prices?.map((p) => (
-                <div key={p._id}>
-                  <Radio value={p.array}>{p.name}</Radio>
-                </div>
+                <Radio key={p._id + p.name} value={p.array}>
+                  {p.name}
+                </Radio>
               ))}
             </Radio.Group>
           </div>
