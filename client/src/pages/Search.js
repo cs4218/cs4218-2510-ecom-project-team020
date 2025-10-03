@@ -1,8 +1,14 @@
 import React from "react";
 import Layout from "./../components/Layout";
 import { useSearch } from "../context/search";
+import { useCart } from "../context/cart";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 const Search = () => {
-  const [values, setValues] = useSearch();
+  const [values] = useSearch();
+  const [cart, setCart] = useCart();
+  const navigate = useNavigate();
 
   const results = values?.results || [];
   const hasResults = results.length > 0;
@@ -31,8 +37,28 @@ const Search = () => {
                       : "No description available"}
                   </p>
                   <p className="card-text"> $ {p.price || 0}</p>
-                  <button className="btn btn-primary ms-1">More Details</button>
-                  <button className="btn btn-secondary ms-1">
+                  <button
+                    className="btn btn-primary ms-1"
+                    onClick={() => {
+                      if (p.slug) {
+                        navigate(`/product/${p.slug}`);
+                      }
+                    }}
+                    disabled={!p.slug}
+                  >
+                    More Details
+                  </button>
+                  <button
+                    className="btn btn-secondary ms-1"
+                    onClick={() => {
+                      setCart([...cart, p]);
+                      localStorage.setItem(
+                        "cart",
+                        JSON.stringify([...cart, p])
+                      );
+                      toast.success("Item Added to cart");
+                    }}
+                  >
                     ADD TO CART
                   </button>
                 </div>
