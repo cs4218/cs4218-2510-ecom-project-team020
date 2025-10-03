@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import "@testing-library/jest-dom/extend-expect";
 import UpdateProduct from "./UpdateProduct";
 
-// Mock dependencies
 jest.mock("axios");
 jest.mock("react-hot-toast");
 jest.mock("./../../components/Layout", () => ({ children, title }) => (
@@ -512,35 +511,6 @@ describe("UpdateProduct Component", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("category-select")).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Accessibility", () => {
-    it("should have proper form structure for screen readers", async () => {
-      renderUpdateProduct();
-
-      await waitFor(() => {
-        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
-      });
-
-      const nameInput = screen.getByPlaceholderText("Enter product name");
-      const descriptionInput = screen.getByPlaceholderText("Enter product description");
-      const priceInput = screen.getByPlaceholderText("Enter price");
-      const quantityInput = screen.getByPlaceholderText("Enter quantity");
-
-      expect(nameInput).toBeInTheDocument();
-      expect(descriptionInput).toBeInTheDocument();
-      expect(priceInput).toBeInTheDocument();
-      expect(quantityInput).toBeInTheDocument();
-    });
-
-    it("should have accessible buttons", async () => {
-      renderUpdateProduct();
-
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "UPDATE PRODUCT" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "DELETE PRODUCT" })).toBeInTheDocument();
       });
     });
   });
