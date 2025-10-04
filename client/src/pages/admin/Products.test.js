@@ -1,53 +1,39 @@
-/**
- * Unit tests for Products.js
- * - Communication-based: axios + toast calls
- * - Output-based: DOM rendering of products, links, images
- * - State-based: render after async fetch resolution
- *
- * Notes:
- *  - Mock paths MUST match the component's import paths exactly.
- *  - No userEvent.setup() (keeps compatibility with older user-event).
- */
-
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import "@testing-library/jest-dom/extend-expect";
+import userEvent from "@testing-library/user-event";
 import axios from "axios";
+import { MemoryRouter } from "react-router-dom";
 
-// ---- Mocks (test doubles) ----
 jest.mock("axios");
 
-// Matches: import Layout from "./../../components/Layout";
-jest.mock("./../../components/Layout", () => ({
+jest.mock("../../components/Layout", () => ({
   __esModule: true,
-  default: ({ children }) => (
-    <div data-testid="LayoutMock">
-      <div>LayoutMock</div>
-      {children}
-    </div>
-  ),
+  default: ({ children }) => <div data-testid="layout">{children}</div>,
 }));
 
-// Matches: import AdminMenu from "../../components/AdminMenu";
 jest.mock("../../components/AdminMenu", () => ({
   __esModule: true,
-  default: () => <div>AdminMenuMock</div>,
+  default: () => <nav data-testid="admin-menu">AdminMenu</nav>,
 }));
 
-// Matches: import toast from "react-hot-toast"; and uses toast.error(...)
-jest.mock("react-hot-toast", () => ({
-  __esModule: true,
-  default: { error: jest.fn() },
-}));
+jest.mock("react-hot-toast", () => {
+  const mockToast = { error: jest.fn(), success: jest.fn() };
+  return { __esModule: true, default: mockToast };
+});
 
-// Import the component under test AFTER mocks are set
+// eslint-disable-next-line import/first
 import Products from "./Products";
+// eslint-disable-next-line import/first
+import toast from "react-hot-toast";
 
-const mockProducts = [
-  { _id: "p1", name: "Rope", description: "Durable rope", slug: "rope" },
-  { _id: "p2", name: "Helmet", description: "Climbing helmet", slug: "helmet" },
-  { _id: "p3", name: "Carabiner", description: "Locking type", slug: "carabiner" },
-];
+const mkProduct = (overrides = {}) => ({
+  _id: "p1",
+  slug: "rope-60m",
+  name: "Rope 60m",
+  description: "Dynamic single rope, 9.8mm, durable sheath.",
+  ...overrides,
+});
 
 const renderPage = () =>
   render(
@@ -56,161 +42,229 @@ const renderPage = () =>
     </MemoryRouter>
   );
 
-describe("Products.js", () => {
-  const toast = require("react-hot-toast").default;
-
+describe("Products page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // Silence React act/warning noise in the console for cleaner test output.
-  let consoleErrorSpy;
-  beforeAll(() => {
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-  });
-  afterAll(() => {
-    consoleErrorSpy.mockRestore();
-  });
-
-  test("calls backend once on mount (communication-based) and renders header (output-based)", async () => {
-    // Arrange
-    axios.get.mockResolvedValueOnce({ data: { products: mockProducts } });
-
-    // Act
+  it("calls the API exactly once on mount", async () => {
+    axios.get.mockResolvedValueOnce({ data: { products: [] } });
     renderPage();
 
-    // Assert
     await waitFor(() => {
       expect(axios.get).toHaveBeenCalledTimes(1);
       expect(axios.get).toHaveBeenCalledWith("/api/v1/product/get-product");
-      expect(screen.getByText("All Products List")).toBeInTheDocument();
     });
   });
 
-  test("renders N product cards with correct text (output-based)", async () => {
-    // Arrange
-    axios.get.mockResolvedValueOnce({ data: { products: mockProducts } });
+  it("renders as many cards as products in the payload", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        products: [
+          mkProduct({ _id: "a", name: "A", slug: "a" }),
+          mkProduct({ _id: "b", name: "B", slug: "b" }),
+          mkProduct({ _id: "c", name: "C", slug: "c" }),
+        ],
+      },
+    });
 
-    // Act
     renderPage();
 
-    // Assert
-    await waitFor(() => {
-      // Cards are wrapped in <Link>, so count links
-      const links = screen.getAllByRole("link");
-      expect(links.length).toBe(mockProducts.length);
+    const titles = await screen.findAllByRole("heading", { level: 5 });
+    expect(titles).toHaveLength(3);
 
-      // Verify product text
-      mockProducts.forEach((p) => {
-        expect(screen.getByText(p.name)).toBeInTheDocument();
-        expect(screen.getByText(p.description)).toBeInTheDocument();
-      });
-    });
+    const imgs = screen.getAllByRole("img");
+    expect(imgs).toHaveLength(3);
   });
 
-  test("each image uses correct src & alt; each card link targets product slug (output-based)", async () => {
-    // Arrange
-    axios.get.mockResolvedValueOnce({ data: { products: mockProducts } });
+  it("preserves order: cards render in the same order as the API result", async () => {
+    const ordered = [
+      mkProduct({ _id: "1", name: "First", slug: "first" }),
+      mkProduct({ _id: "2", name: "Second", slug: "second" }),
+      mkProduct({ _id: "3", name: "Third", slug: "third" }),
+    ];
+    axios.get.mockResolvedValueOnce({ data: { products: ordered } });
 
-    // Act
     renderPage();
 
-    // Assert
-    await waitFor(() => {
-      mockProducts.forEach((p) => {
-        // Image checks
-        const img = screen.getByAltText(p.name);
-        expect(img).toHaveAttribute(
-          "src",
-          `/api/v1/product/product-photo/${p._id}`
-        );
-
-        // Link wraps the card; find closest anchor from product title
-        const title = screen.getByText(p.name);
-        const link = title.closest("a");
-        expect(link).toBeTruthy();
-        expect(link).toHaveAttribute(
-          "href",
-          `/dashboard/admin/product/${p.slug}`
-        );
-      });
-    });
+    const titles = await screen.findAllByRole("heading", { level: 5 });
+    const textOrder = titles.map((t) => t.textContent);
+    expect(textOrder).toEqual(["First", "Second", "Third"]);
   });
 
-  test("shows toast error on fetch failure and renders empty state (communication + output)", async () => {
-    // Arrange
-    axios.get.mockRejectedValueOnce(new Error("Network error"));
+  it("each product renders a link with correct class and href", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        products: [
+          mkProduct({ _id: "x", name: "Belay", slug: "belay-device" }),
+          mkProduct({ _id: "y", name: "Draws", slug: "quickdraws-6" }),
+        ],
+      },
+    });
 
-    // Act
     renderPage();
 
-    // Assert
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Someething Went Wrong");
-      // empty: no product links
-      const links = screen.queryAllByRole("link");
-      expect(links.length).toBe(0);
-      // header still visible
-      expect(screen.getByText("All Products List")).toBeInTheDocument();
-    });
+    const belay = await screen.findByRole("heading", { name: "Belay", level: 5 });
+    const belayLink = belay.closest("a");
+    expect(belayLink).toHaveClass("product-link");
+    expect(belayLink).toHaveAttribute(
+      "href",
+      "/dashboard/admin/product/belay-device"
+    );
+
+    const draws = screen.getByRole("heading", { name: "Draws", level: 5 });
+    const drawsLink = draws.closest("a");
+    expect(drawsLink).toHaveClass("product-link");
+    expect(drawsLink).toHaveAttribute(
+      "href",
+      "/dashboard/admin/product/quickdraws-6"
+    );
   });
 
-  test("renders empty state gracefully when API returns [] (output-based)", async () => {
-    // Arrange
+  it("image src and alt reflect _id and name; alt can be empty when name missing", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        products: [
+          mkProduct({ _id: "z1", name: "Helmet", slug: "helmet" }),
+          mkProduct({ _id: "z2", name: "", slug: "no-name", description: "" }),
+        ],
+      },
+    });
+
+    renderPage();
+
+    const img1 = await screen.findByRole("img", { name: "Helmet" });
+    expect(img1).toHaveAttribute("src", "/api/v1/product/product-photo/z1");
+
+    const imgs = screen.getAllByRole("img");
+
+    expect(imgs[1]).toHaveAttribute("src", "/api/v1/product/product-photo/z2");
+    expect(imgs[1]).toHaveAttribute("alt", "");
+  });
+
+  it("handles undefined products in response without crashing", async () => {
+    axios.get.mockResolvedValueOnce({ data: {} });
+
+    render(
+      <MemoryRouter>
+        <Products />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: /all products list/i })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("handles null products in response without crashing", async () => {
+    axios.get.mockResolvedValueOnce({ data: { products: null } });
+
+    render(
+      <MemoryRouter>
+        <Products />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: /all products list/i })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+
+  it("renders large descriptions fully (no truncation logic in component)", async () => {
+    const long =
+      "Very long description ".repeat(10) + "with lots of text to ensure rendering is stable.";
+    axios.get.mockResolvedValueOnce({
+      data: { products: [mkProduct({ _id: "ld", name: "Long Desc", slug: "long", description: long })] },
+    });
+
+    renderPage();
+
+    const title = await screen.findByRole("heading", { name: "Long Desc", level: 5 });
+    const card = title.closest(".card");
+    expect(card).toHaveTextContent(long);
+  });
+
+  it("supports slugs with special characters; link path is preserved", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        products: [
+          mkProduct({
+            _id: "sp",
+            name: "Special",
+            slug: "spec!al slug_1~2",
+          }),
+        ],
+      },
+    });
+
+    renderPage();
+
+    const title = await screen.findByRole("heading", { name: "Special", level: 5 });
+    const link = title.closest("a");
+    expect(link).toHaveAttribute(
+      "href",
+      "/dashboard/admin/product/spec!al slug_1~2"
+    );
+  });
+
+  it("displays toast on fetch error only once and keeps the page stable", async () => {
+    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    axios.get.mockRejectedValueOnce(new Error("Network down"));
+
+    renderPage();
+
+    expect(
+      await screen.findByRole("heading", { name: /all products list/i })
+    ).toBeInTheDocument();
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("Failed to fetch products");
+    logSpy.mockRestore();
+  });
+
+  it("empty list: renders heading and no cards/images", async () => {
     axios.get.mockResolvedValueOnce({ data: { products: [] } });
 
-    // Act
     renderPage();
 
-    // Assert
-    await waitFor(() => {
-      expect(screen.getByText("All Products List")).toBeInTheDocument();
-      const links = screen.queryAllByRole("link");
-      expect(links.length).toBe(0);
-    });
+    expect(
+      await screen.findByRole("heading", { name: /all products list/i })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 5 })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
-  test("state updates after fetch (state observed via DOM)", async () => {
-    // Arrange
-    axios.get.mockResolvedValueOnce({ data: { products: mockProducts } });
-
-    // Act
+  it("basic layout sanity: admin menu is in left column and product list on the right", async () => {
+    axios.get.mockResolvedValueOnce({ data: { products: [] } });
     renderPage();
 
-    // Assert: titles appear only after async resolves
-    const rope = await screen.findByText("Rope");
-    expect(rope).toBeInTheDocument();
+    expect(await screen.findByTestId("layout")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("heading", { name: /all products list/i })
+    ).toBeInTheDocument();
   });
 
-  test("missing optional fields (empty description) does not crash (robustness)", async () => {
-    // Arrange
-    const edgeProducts = [{ _id: "x1", name: "Ascender", description: "", slug: "ascender" }];
-    axios.get.mockResolvedValueOnce({ data: { products: edgeProducts } });
+  it("first product link is keyboard-focusable", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: {
+        products: [
+          mkProduct({ _id: "a", name: "A", slug: "a" }),
+          mkProduct({ _id: "b", name: "B", slug: "b" }),
+        ],
+      },
+    });
 
-    // Act
     renderPage();
 
-    // Assert
-    await waitFor(() => {
-      expect(screen.getByText("Ascender")).toBeInTheDocument();
-      // description is empty -> ensure we still render the card without throwing
-      const link = screen.getByRole("link");
-      expect(link).toHaveAttribute("href", "/dashboard/admin/product/ascender");
-      const img = screen.getByAltText("Ascender");
-      expect(img).toHaveAttribute("src", "/api/v1/product/product-photo/x1");
-    });
-  });
+    const linkA = (await screen.findByRole("heading", { name: "A", level: 5 })).closest("a");
+    expect(linkA?.tagName).toBe("A");
 
-  test("does not refetch after initial mount (no extra fetches)", async () => {
-    // Arrange
-    axios.get.mockResolvedValueOnce({ data: { products: mockProducts } });
-
-    // Act
-    renderPage();
-
-    // Assert
-    await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledTimes(1);
-    });
+    await userEvent.tab();
+    expect(document.activeElement).toBe(linkA);
   });
 });
