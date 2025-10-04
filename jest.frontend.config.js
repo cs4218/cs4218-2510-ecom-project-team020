@@ -27,7 +27,7 @@ module.exports = {
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["client/src/pages/**/*.js"],
+  collectCoverageFrom: ["client/src/pages/**/*.js", "client/src/components/**/*.js"],
   coverageThreshold: {
     global: {
       lines: 100,
