@@ -65,6 +65,25 @@ const UpdateProduct = () => {
   // Handle product update form submission
   const handleUpdate = async (e) => {
     e.preventDefault();
+    
+    if (!name || !description || !price || !quantity || !category) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    const priceValue = parseFloat(price);
+    const quantityValue = parseInt(quantity);
+    
+    if (isNaN(priceValue) || priceValue < 0) {
+      toast.error("Price must be a non-negative number");
+      return;
+    }
+    
+    if (isNaN(quantityValue) || quantityValue < 0) {
+      toast.error("Quantity must be a non-negative number");
+      return;
+    }
+    
     try {
       const productData = new FormData();
       productData.append("name", name);
