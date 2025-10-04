@@ -194,7 +194,7 @@ describe("UpdateProduct Component", () => {
         expect(priceInput.validity.valid).toBe(true);
       });
 
-      it("should invalidate negative prices", async () => {
+      it("should prevent submission with negative price", async () => {
         renderUpdateProduct();
 
         await waitFor(() => {
@@ -203,7 +203,13 @@ describe("UpdateProduct Component", () => {
 
         const priceInput = screen.getByPlaceholderText("Enter price");
         fireEvent.change(priceInput, { target: { value: "-10" } });
-        expect(priceInput.validity.rangeUnderflow).toBe(true);
+        
+        fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Price must be a non-negative number");
+        });
+        expect(axios.put).not.toHaveBeenCalled();
       });
     });
 
@@ -232,7 +238,7 @@ describe("UpdateProduct Component", () => {
         expect(quantityInput.validity.valid).toBe(true);
       });
 
-      it("should invalidate negative quantities", async () => {
+      it("should prevent submission with negative quantity", async () => {
         renderUpdateProduct();
 
         await waitFor(() => {
@@ -241,7 +247,13 @@ describe("UpdateProduct Component", () => {
 
         const quantityInput = screen.getByPlaceholderText("Enter quantity");
         fireEvent.change(quantityInput, { target: { value: "-5" } });
-        expect(quantityInput.validity.rangeUnderflow).toBe(true);
+        
+        fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Quantity must be a non-negative number");
+        });
+        expect(axios.put).not.toHaveBeenCalled();
       });
     });
   });
