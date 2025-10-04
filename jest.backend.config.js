@@ -6,7 +6,9 @@ module.exports = {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/**/*.test.js"],
+  testMatch: ["<rootDir>/**/*.test.js",
+              "<rootDir>/{controllers,models,routes}/**/*.test.js"
+  ],
 
   // jest code coverage
   collectCoverage: true,
