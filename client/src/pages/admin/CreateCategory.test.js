@@ -178,6 +178,57 @@ describe("CreateCategory Component", () => {
     });
 
     describe("Invalid Category Creation", () => {
+      it("should prevent submission with empty category name", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Try to submit without entering any category name
+        fireEvent.click(submitButton);
+
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it("should prevent submission with category name too short", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Enter a single character (below minLength of 2)
+        fireEvent.change(categoryInput, { target: { value: "A" } });
+        fireEvent.click(submitButton);
+
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it("should prevent submission with category name too long", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Enter a string longer than maxLength of 50
+        const longCategoryName = "A".repeat(51);
+        fireEvent.change(categoryInput, { target: { value: longCategoryName } });
+        fireEvent.click(submitButton);
+
+        // HTML5 validation should prevent form submission
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
       it("should handle API error during creation", async () => {
         axios.post.mockRejectedValue(new Error("Creation failed"));
         renderCreateCategory();

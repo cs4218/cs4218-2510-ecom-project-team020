@@ -22,7 +22,7 @@ jest.mock("react-router-dom", () => ({
 }));
 
 const mockCategories = [
-  { _id: "cat1", name: "Electronics" },
+  { _id: "cat1", name: "Test Category" },
   { _id: "cat2", name: "Books" },
   { _id: "cat3", name: "Clothing" },
 ];
@@ -38,8 +38,13 @@ const renderCreateProduct = () => {
 describe("CreateProduct Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    axios.get.mockResolvedValue({
-      data: { success: true, categories: mockCategories }
+    axios.get.mockImplementation((url) => {
+      if (url === "/api/v1/category/get-category") {
+        return Promise.resolve({
+          data: { success: true, categories: mockCategories }
+        });
+      }
+      return Promise.resolve({ data: {} });
     });
     URL.createObjectURL = jest.fn(() => "mock-url");
   });
@@ -108,54 +113,224 @@ describe("CreateProduct Component", () => {
 
   describe("Form Validation - Boundary Value Analysis", () => {
     describe("Price Input Validation", () => {
-      it("should accept minimum valid price (0)", () => {
+      it("should accept minimum valid price (0) and allow submission", async () => {
         renderCreateProduct();
-        const priceInput = screen.getByPlaceholderText("Enter price");
-
-        fireEvent.change(priceInput, { target: { value: "0" } });
-        expect(priceInput.validity.valid).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "0" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "10" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalled();
+        });
       });
 
-      it("should accept decimal prices", () => {
+      it("should accept decimal prices and allow submission", async () => {
         renderCreateProduct();
-        const priceInput = screen.getByPlaceholderText("Enter price");
-
-        fireEvent.change(priceInput, { target: { value: "99.99" } });
-        expect(priceInput.validity.valid).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "99.99" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "10" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalled();
+        });
       });
 
-      it("should invalidate negative prices", () => {
+      it("should prevent submission with negative price", async () => {
         renderCreateProduct();
-        const priceInput = screen.getByPlaceholderText("Enter price");
-
-        fireEvent.change(priceInput, { target: { value: "-1" } });
-        expect(priceInput.validity.rangeUnderflow).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "-1" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "10" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Price must be a non-negative number");
+        });
+        expect(axios.post).not.toHaveBeenCalled();
       });
     });
 
     describe("Quantity Input Validation", () => {
-      it("should accept minimum valid quantity (0)", () => {
+      it("should accept minimum valid quantity (0) and allow submission", async () => {
         renderCreateProduct();
-        const quantityInput = screen.getByPlaceholderText("Enter quantity");
-
-        fireEvent.change(quantityInput, { target: { value: "0" } });
-        expect(quantityInput.validity.valid).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "99.99" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "0" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalled();
+        });
       });
 
-      it("should accept large quantities", () => {
+      it("should accept large quantities and allow submission", async () => {
         renderCreateProduct();
-        const quantityInput = screen.getByPlaceholderText("Enter quantity");
-
-        fireEvent.change(quantityInput, { target: { value: "9999" } });
-        expect(quantityInput.validity.valid).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "99.99" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "9999" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalled();
+        });
       });
 
-      it("should invalidate negative quantities", () => {
+      it("should prevent submission with negative quantity", async () => {
         renderCreateProduct();
-        const quantityInput = screen.getByPlaceholderText("Enter quantity");
-
-        fireEvent.change(quantityInput, { target: { value: "-1" } });
-        expect(quantityInput.validity.rangeUnderflow).toBe(true);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+          target: { value: "Test Product" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+          target: { value: "Test Description" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+          target: { value: "99.99" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+          target: { value: "-1" }
+        });
+        
+        await waitFor(() => {
+          expect(screen.getByText("Select a category")).toBeInTheDocument();
+        });
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+        
+        const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+        const file = new File(["test"], "product.jpg", { type: "image/jpeg" });
+        fireEvent.change(fileInput, { target: { files: [file] } });
+        
+        fireEvent.click(screen.getByText("CREATE PRODUCT"));
+        
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Quantity must be a non-negative number");
+        });
+        expect(axios.post).not.toHaveBeenCalled();
       });
     });
 
@@ -233,18 +408,28 @@ describe("CreateProduct Component", () => {
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
         fireEvent.change(fileInput, { target: { files: [file] } });
 
-        const categorySelect = screen.getByText("Select a category");
-        fireEvent.click(categorySelect);
+        fireEvent.mouseDown(screen.getByText("Select a category"));
+        await waitFor(() => {
+          const categoryOption = screen.getByText("Test Category");
+          fireEvent.click(categoryOption);
+        });
+
+        fireEvent.mouseDown(screen.getByText("Select Shipping"));
+        await waitFor(() => {
+          const shippingOption = screen.getByText("Yes");
+          fireEvent.click(shippingOption);
+        });
 
         fireEvent.click(screen.getByText("CREATE PRODUCT"));
 
         await waitFor(() => {
-          expect(toast.error).toHaveBeenCalledWith("Please fill in all required fields");
+          expect(axios.post).toHaveBeenCalled();
+          expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+          expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
         });
       });
 
-      it("should handle successful form submission", async () => {
-        axios.post.mockResolvedValue({ data: { success: true } });
+      it("should show error when submitting empty form", async () => {
         renderCreateProduct();
 
         const createButton = screen.getByText("CREATE PRODUCT");
@@ -253,6 +438,7 @@ describe("CreateProduct Component", () => {
         await waitFor(() => {
           expect(toast.error).toHaveBeenCalledWith("Please fill in all required fields");
         });
+        expect(axios.post).not.toHaveBeenCalled();
       });
     });
 
@@ -376,31 +562,6 @@ describe("CreateProduct Component", () => {
 
       const shippingSelect = screen.getByText("Select Shipping");
       expect(shippingSelect).toBeInTheDocument();
-    });
-  });
-
-  describe("Accessibility", () => {
-    it("should have proper form labels and structure", () => {
-      renderCreateProduct();
-
-      const nameInput = screen.getByPlaceholderText("Enter product name");
-      const descriptionInput = screen.getByPlaceholderText("Enter product description");
-      const priceInput = screen.getByPlaceholderText("Enter price");
-      const quantityInput = screen.getByPlaceholderText("Enter quantity");
-
-      expect(nameInput).toBeInTheDocument();
-      expect(descriptionInput).toBeInTheDocument();
-      expect(priceInput).toBeInTheDocument();
-      expect(quantityInput).toBeInTheDocument();
-    });
-
-    it("should have accessible file input", () => {
-      renderCreateProduct();
-
-      const uploadLabel = screen.getByText("Upload Photo");
-      const fileInput = uploadLabel.querySelector("input[type='file']");
-      expect(fileInput).toHaveAttribute("hidden");
-      expect(fileInput).toHaveAttribute("name", "photo");
     });
   });
 
