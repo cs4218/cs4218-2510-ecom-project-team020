@@ -65,6 +65,7 @@ describe("UpdateProduct Component", () => {
   });
 
   describe("Component Initialization", () => {
+    // Classification: Output-based (verifies DOM elements and attributes)
     it("should render with correct layout and title", () => {
       renderUpdateProduct();
 
@@ -73,6 +74,7 @@ describe("UpdateProduct Component", () => {
       expect(screen.getByText("Update Product")).toBeInTheDocument();
     });
 
+    // Classification: Communication-based (verifies API calls on mount)
     it("should fetch product details and categories on mount", async () => {
       renderUpdateProduct();
 
@@ -82,6 +84,7 @@ describe("UpdateProduct Component", () => {
       });
     });
 
+    // Classification: Output-based (verifies form pre-population), State-based (verifies data loading)
     it("should populate form fields with product data", async () => {
       renderUpdateProduct();
 
@@ -93,6 +96,7 @@ describe("UpdateProduct Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies error handling for API failure)
     it("should handle product fetch error", async () => {
       axios.get.mockImplementation((url) => {
         if (url.includes("/api/v1/product/get-product/")) {
@@ -170,6 +174,8 @@ describe("UpdateProduct Component", () => {
 
   describe("Form Validation - Boundary Value Analysis", () => {
     describe("Price Input Validation", () => {
+      // Classification: Output-based (verifies input validation state)
+      // Technique: Boundary Value Analysis (minimum valid price = 0)
       it("should accept minimum valid price (0)", async () => {
         renderUpdateProduct();
 
@@ -182,6 +188,8 @@ describe("UpdateProduct Component", () => {
         expect(priceInput.validity.valid).toBe(true);
       });
 
+      // Classification: Output-based (verifies input validation state)
+      // Technique: Boundary Value Analysis (decimal validation with step=0.01)
       it("should accept decimal prices with step validation", async () => {
         renderUpdateProduct();
 
@@ -194,6 +202,8 @@ describe("UpdateProduct Component", () => {
         expect(priceInput.validity.valid).toBe(true);
       });
 
+      // Classification: Output-based (verifies error toast), Communication-based (verifies no API call)
+      // Technique: Boundary Value Analysis (negative price = below minimum)
       it("should prevent submission with negative price", async () => {
         renderUpdateProduct();
 
@@ -260,6 +270,8 @@ describe("UpdateProduct Component", () => {
 
   describe("Form Updates - Equivalence Partitioning", () => {
     describe("Valid Update Cases", () => {
+      // Classification: Communication-based (verifies PUT API call), Output-based (verifies success toast and navigation)
+      // Technique: Equivalence Partitioning (valid product update)
       it("should handle successful product update", async () => {
         axios.put.mockResolvedValue({ data: { success: true } });
         renderUpdateProduct();
@@ -283,6 +295,8 @@ describe("UpdateProduct Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies API call with file upload), State-based (verifies file state)
+      // Technique: Equivalence Partitioning (valid update with new photo)
       it("should update product with new photo", async () => {
         axios.put.mockResolvedValue({ data: { success: true } });
         renderUpdateProduct();
@@ -359,6 +373,7 @@ describe("UpdateProduct Component", () => {
   });
 
   describe("Product Deletion", () => {
+    // Classification: Output-based (verifies confirmation dialog), Communication-based (verifies user confirmation)
     it("should confirm before deleting product", async () => {
       window.confirm.mockReturnValue(true);
       axios.delete.mockResolvedValue({ data: { success: true } });
@@ -375,6 +390,7 @@ describe("UpdateProduct Component", () => {
       );
     });
 
+    // Classification: Communication-based (verifies DELETE API call), Output-based (verifies success toast and navigation)
     it("should delete product when confirmed", async () => {
       window.confirm.mockReturnValue(true);
       axios.delete.mockResolvedValue({ data: { success: true } });
@@ -393,6 +409,7 @@ describe("UpdateProduct Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies no API call when cancelled)
     it("should not delete product when cancelled", async () => {
       window.confirm.mockReturnValue(false);
       renderUpdateProduct();

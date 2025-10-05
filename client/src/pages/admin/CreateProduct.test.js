@@ -50,6 +50,7 @@ describe("CreateProduct Component", () => {
   });
 
   describe("Component Initialization", () => {
+    // Classification: Output-based (verifies DOM elements and attributes)
     it("should render with correct layout and title", () => {
       renderCreateProduct();
 
@@ -58,6 +59,7 @@ describe("CreateProduct Component", () => {
       expect(screen.getByText("Create Product")).toBeInTheDocument();
     });
 
+    // Classification: Communication-based (verifies API call on mount)
     it("should fetch categories on component mount", async () => {
       renderCreateProduct();
 
@@ -66,6 +68,7 @@ describe("CreateProduct Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies error handling for API failure)
     it("should display error toast when category fetch fails", async () => {
       axios.get.mockRejectedValue(new Error("Network error"));
       renderCreateProduct();
@@ -77,6 +80,7 @@ describe("CreateProduct Component", () => {
   });
 
   describe("Form Elements Rendering", () => {
+    // Classification: Output-based (verifies form elements and attributes)
     it("should render all form inputs with correct attributes", async () => {
       renderCreateProduct();
 
@@ -93,6 +97,8 @@ describe("CreateProduct Component", () => {
       expect(screen.getByText("CREATE PRODUCT")).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies input validation attributes)
+    // Technique: Boundary Value Analysis (verifies min=0, step=0.01 for price)
     it("should render price input with correct validation attributes", () => {
       renderCreateProduct();
 
@@ -102,6 +108,8 @@ describe("CreateProduct Component", () => {
       expect(priceInput).toHaveAttribute("step", "0.01");
     });
 
+    // Classification: Output-based (verifies input validation attributes)
+    // Technique: Boundary Value Analysis (verifies min=0 for quantity)
     it("should render quantity input with correct validation attributes", () => {
       renderCreateProduct();
 
@@ -113,6 +121,8 @@ describe("CreateProduct Component", () => {
 
   describe("Form Validation - Boundary Value Analysis", () => {
     describe("Price Input Validation", () => {
+      // Classification: Communication-based (verifies API call with minimum valid price)
+      // Technique: Boundary Value Analysis (minimum valid price = 0)
       it("should accept minimum valid price (0) and allow submission", async () => {
         renderCreateProduct();
         
@@ -149,6 +159,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies API call with decimal prices)
+      // Technique: Boundary Value Analysis (decimal validation with step=0.01)
       it("should accept decimal prices and allow submission", async () => {
         renderCreateProduct();
         
@@ -185,6 +197,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Output-based (verifies error toast), Communication-based (verifies no API call)
+      // Technique: Boundary Value Analysis (negative price = below minimum)
       it("should prevent submission with negative price", async () => {
         renderCreateProduct();
         
@@ -381,6 +395,8 @@ describe("CreateProduct Component", () => {
 
   describe("Form Submission - Equivalence Partitioning", () => {
     describe("Valid Submission Cases", () => {
+      // Classification: Communication-based (verifies successful API call), Output-based (verifies success toast and navigation)
+      // Technique: Equivalence Partitioning (valid complete form submission)
       it("should submit form successfully with all required fields", async () => {
         axios.post.mockResolvedValue({ data: { success: true } });
         renderCreateProduct();
@@ -429,6 +445,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Output-based (verifies validation error toast), Communication-based (verifies no API call)
+      // Technique: Equivalence Partitioning (invalid empty form submission)
       it("should show error when submitting empty form", async () => {
         renderCreateProduct();
 
