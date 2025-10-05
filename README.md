@@ -57,6 +57,23 @@ AI Declaration: Unit tests generated with AI assistance but were all curated, va
 | Footer            | `client/src/pages/Footer.test.js`          | Shows site-wide footer with navigation links, contact info, and policy references.                                                                                    |
 | AuthProvider          | `client/src/context/auth.test.js`          | Manages and provides authentication state across React components.                                                                                        |
 
+**Alicia Yap @wapisai**
+AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
+
+| Domain                               | File                                                | Description                                                                                                                                                                 |
+| ------------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin Orders Page               | `client/src/pages/admin/AdminOrders.test.js`        | Verifies order fetching, status updates, payment outcomes, and graceful handling of API failures, empty data, and missing fields. Achieved 100% branch and line coverage.   |
+| Products Page                    | `client/src/pages/admin/Products.test.js`           | Ensures product list renders in correct order, handles null/undefined entries safely, preserves slug formatting, validates layout, and handles API errors with stable UI.   |
+| Users Page (Admin)               | `client/src/pages/admin/Users.test.js`              | Confirms correct layout with `Layout` and `AdminMenu`, validates heading and structure, prevents redundant renders, and ensures accessibility focus behavior.               |
+| User Menu Component              | `client/src/components/UserMenu.test.js`            | Tests navigation structure, active state management by route, keyboard accessibility, and link correctness; covers boundary and structural validation cases.                |
+| Private Route | `client/src/components/Routes/PrivateRoute.test.js` | Simulates multiple auth states: missing, valid, and invalid tokens. Validates redirect flow, API handling, cleanup after unmount, and race-condition branches.              |
+| Header Component                 | `client/src/components/Header.test.js`              | Validates navigation visibility across auth states, category dropdown population, logout behavior, cart badge accuracy, and presence of search and brand elements.          |
+| Footer Component                 | `client/src/components/Footer.test.js`              | Tests all footer navigation links (About, Contact, Policy), link routes, separators, accessibility, and static copyright.                                                   |
+| Layout Component                 | `client/src/components/Layout.test.js`              | Verifies consistent rendering of `Header`, `Footer`, and `Toaster`; ensures proper `<Helmet>` metadata defaults and overrides.                                              |
+| Product Controller (Backend)     | `controllers/productController.test.js`             | Exhaustively tests all CRUD operations and endpoints: search, filter, count, pagination, upload limits, and error handling using **EP/BVA techniques**. 59/59 tests passed. |
+| User Model (Backend)             | `models/userModel.test.js`                          | Checks schema paths, required fields, default values, trimming behavior, and data persistence within MongoDB; confirms model integrity under various conditions.            |
+
+
 # Project Information 
 
 ## 1. Project Introduction
