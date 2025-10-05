@@ -203,6 +203,10 @@ describe("CreateCategory Component", () => {
         // Try to submit without entering any category name
         fireEvent.click(submitButton);
 
+        // Should show validation error instead of making API call
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Category name is required");
+        });
         expect(axios.post).not.toHaveBeenCalled();
       });
 
@@ -222,6 +226,10 @@ describe("CreateCategory Component", () => {
         fireEvent.change(categoryInput, { target: { value: "A" } });
         fireEvent.click(submitButton);
 
+        // Should show validation error instead of making API call
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Category name must be at least 2 characters long");
+        });
         expect(axios.post).not.toHaveBeenCalled();
       });
 
@@ -242,7 +250,10 @@ describe("CreateCategory Component", () => {
         fireEvent.change(categoryInput, { target: { value: longCategoryName } });
         fireEvent.click(submitButton);
 
-        // HTML5 validation should prevent form submission
+        // Should show validation error instead of making API call
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Category name must not exceed 50 characters");
+        });
         expect(axios.post).not.toHaveBeenCalled();
       });
 
@@ -287,6 +298,305 @@ describe("CreateCategory Component", () => {
 
         await waitFor(() => {
           expect(toast.error).toHaveBeenCalledWith("Category already exists");
+        });
+      });
+    });
+  });
+
+  describe("Pairwise Combinatorial Testing - Category Operations", () => {
+    // Technique: Pairwise Combinatorial - Test different input lengths with different character types
+    it("should handle minimum length with special characters", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Pairwise: minimum length (2) + special characters
+      fireEvent.change(categoryInput, { target: { value: "A&" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: "A&"
+        });
+      });
+    });
+
+    it("should handle maximum length with numbers", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Pairwise: maximum length (50) + numbers
+      const maxLengthWithNumbers = "Category123" + "A".repeat(39);
+      fireEvent.change(categoryInput, { target: { value: maxLengthWithNumbers } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: maxLengthWithNumbers
+        });
+      });
+    });
+
+    it("should handle medium length with mixed case", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Pairwise: medium length + mixed case
+      fireEvent.change(categoryInput, { target: { value: "MiXeD CaSe Category" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: "MiXeD CaSe Category"
+        });
+      });
+    });
+
+    // Technique: Pairwise Combinatorial - Test API responses with different input types
+    it("should handle API failure with special characters input", async () => {
+      axios.post.mockRejectedValue(new Error("Network error"));
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Pairwise: special characters + API failure
+      fireEvent.change(categoryInput, { target: { value: "Arts & Crafts" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to create category. Please check your input and try again.");
+      });
+    });
+
+    it("should handle successful creation with whitespace", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Pairwise: whitespace handling + success
+      fireEvent.change(categoryInput, { target: { value: "  Spaced Category  " } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: "  Spaced Category  "
+        });
+      });
+    });
+  });
+
+  describe("Decision Tree Testing - Category Management Flow", () => {
+    // Decision Tree: Test the complete flow from creation to update to deletion
+    it("should follow decision tree - create then update flow", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      // Step 1: Create a category
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      fireEvent.change(categoryInput, { target: { value: "Decision Tree Test" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: "Decision Tree Test"
+        });
+        expect(axios.get).toHaveBeenCalledTimes(2); // Initial + refresh after creation
+      });
+
+      // Step 2: Update the category (simulate by editing existing category)
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalInputs = screen.getAllByTestId("category-input");
+        expect(modalInputs).toHaveLength(2);
+      });
+
+      const modalInput = screen.getAllByTestId("category-input")[1];
+      const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+
+      fireEvent.change(modalInput, { target: { value: "Updated Electronics" } });
+      fireEvent.click(modalSubmitButton);
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+      });
+    });
+
+    it("should follow decision tree - validation failure path", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      // Decision: Empty input -> should not proceed to API call
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+      fireEvent.click(submitButton);
+
+      // Should show validation error instead of making API call
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Category name is required");
+      });
+      expect(axios.post).not.toHaveBeenCalled();
+    });
+
+    it("should follow decision tree - API error recovery", async () => {
+      // Setup API to fail first, then succeed
+      let callCount = 0;
+      axios.post.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error("Temporary failure"));
+        }
+        return Promise.resolve({
+          data: { success: true, message: "Category created successfully" }
+        });
+      });
+
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // First attempt - should fail
+      fireEvent.change(categoryInput, { target: { value: "Recovery Test" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to create category. Please check your input and try again.");
+      });
+
+      // Second attempt - should succeed
+      fireEvent.change(categoryInput, { target: { value: "Recovery Success" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Category "Recovery Success" created successfully');
+      });
+    });
+
+    it("should follow decision tree - complete CRUD operations", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      // CREATE operation
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      fireEvent.change(categoryInput, { target: { value: "CRUD Test" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+      });
+
+      // READ operation (verify categories are displayed)
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+        expect(screen.getByText("Books")).toBeInTheDocument();
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+
+      // UPDATE operation
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+        fireEvent.click(modalSubmitButton);
+      });
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+      });
+
+      // DELETE operation
+      const deleteButtons = screen.getAllByText("Delete");
+      fireEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(axios.delete).toHaveBeenCalled();
+      });
+    });
+
+    it("should follow decision tree - different validation paths", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+      const submitButton = screen.getByRole("button", { name: "Submit" });
+
+      // Path 1: Too short -> validation fails
+      fireEvent.change(categoryInput, { target: { value: "A" } });
+      fireEvent.click(submitButton);
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Category name must be at least 2 characters long");
+      });
+      expect(axios.post).not.toHaveBeenCalled();
+
+      // Path 2: Too long -> validation fails
+      fireEvent.change(categoryInput, { target: { value: "A".repeat(51) } });
+      fireEvent.click(submitButton);
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Category name must not exceed 50 characters");
+      });
+      expect(axios.post).not.toHaveBeenCalled();
+
+      // Path 3: Valid input -> proceeds to API
+      axios.post.mockResolvedValueOnce({ data: { success: true } });
+      fireEvent.change(categoryInput, { target: { value: "Valid Category" } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+          name: "Valid Category"
         });
       });
     });
