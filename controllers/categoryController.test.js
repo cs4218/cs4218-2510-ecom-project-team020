@@ -1,12 +1,12 @@
 import {
-    // createCategoryController,
-    // updateCategoryController,
+    createCategoryController,
+    updateCategoryController,
     getCategoriesController,
     singleCategoryController,
-    // deleteCategoryController,
+    deleteCategoryController,
 } from "../controllers/categoryController.js";
 import categoryModel, { _saveMock } from "../models/categoryModel.js";
-// import slugify from "slugify";
+import slugify from "slugify";
 
 jest.mock("../models/categoryModel.js", () => {
     const saveMock = jest.fn();
@@ -32,12 +32,153 @@ describe("Category controllers", () => {
         jest.clearAllMocks();
     });
 
-    // Gerald's Admin Actions
-    // describe("Creating a new category using createCategoryController", () => {
-    // });
+    describe("Creating a new category using createCategoryController", () => {
+        it("returns 201 success when creating a new category", async () => {
+            const mockCategory = { _id: "1", name: "Electronics", slug: "electronics" };
+            categoryModel.findOne.mockResolvedValueOnce(null); // No existing category
+            _saveMock.mockResolvedValueOnce(mockCategory);
 
-    // describe("Updating a category using updateCategoryController", () => {
-    // });
+            const req = { body: { name: "Electronics" } };
+            const res = mockRes();
+
+            await createCategoryController(req, res);
+
+            expect(categoryModel.findOne).toHaveBeenCalledWith({ name: "Electronics" });
+            expect(_saveMock).toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.send).toHaveBeenCalledWith({
+                success: true,
+                message: "New category created",
+                category: mockCategory,
+            });
+        });
+
+        it("returns 400 error when name is missing", async () => {
+            const req = { body: {} };
+            const res = mockRes();
+
+            await createCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.send).toHaveBeenCalledWith({
+                message: "Name is required"
+            });
+        });
+
+        it("returns 409 error when category already exists", async () => {
+            const existingCategory = { _id: "1", name: "Electronics", slug: "electronics" };
+            categoryModel.findOne.mockResolvedValueOnce(existingCategory);
+
+            const req = { body: { name: "Electronics" } };
+            const res = mockRes();
+
+            await createCategoryController(req, res);
+
+            expect(categoryModel.findOne).toHaveBeenCalledWith({ name: "Electronics" });
+            expect(res.status).toHaveBeenCalledWith(409);
+            expect(res.send).toHaveBeenCalledWith({
+                success: false,
+                message: "Category Already Exists",
+            });
+        });
+
+        it("returns 500 error when database error occurs", async () => {
+            categoryModel.findOne.mockRejectedValueOnce(new Error("Database error"));
+
+            const req = { body: { name: "Electronics" } };
+            const res = mockRes();
+
+            await createCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: false,
+                    message: "Error in Category",
+                })
+            );
+        });
+    });
+
+    describe("Updating a category using updateCategoryController", () => {
+        it("returns 200 success when updating an existing category", async () => {
+            const updatedCategory = { _id: "1", name: "Updated Electronics", slug: "updated-electronics" };
+            categoryModel.findByIdAndUpdate.mockResolvedValueOnce(updatedCategory);
+
+            const req = { 
+                body: { name: "Updated Electronics" },
+                params: { id: "1" }
+            };
+            const res = mockRes();
+
+            await updateCategoryController(req, res);
+
+            expect(categoryModel.findByIdAndUpdate).toHaveBeenCalledWith(
+                "1",
+                { name: "Updated Electronics", slug: "Updated-Electronics" },
+                { new: true }
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                success: true,
+                message: "Category Updated Successfully",
+                category: updatedCategory,
+            });
+        });
+
+        it("returns 400 error when name is missing", async () => {
+            const req = { 
+                body: {},
+                params: { id: "1" }
+            };
+            const res = mockRes();
+
+            await updateCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.send).toHaveBeenCalledWith({
+                message: "Name is required"
+            });
+        });
+
+        it("returns 404 error when category is not found", async () => {
+            categoryModel.findByIdAndUpdate.mockResolvedValueOnce(null);
+
+            const req = { 
+                body: { name: "Updated Electronics" },
+                params: { id: "nonexistent" }
+            };
+            const res = mockRes();
+
+            await updateCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.send).toHaveBeenCalledWith({
+                success: false,
+                message: "Category not found",
+            });
+        });
+
+        it("returns 500 error when database error occurs", async () => {
+            categoryModel.findByIdAndUpdate.mockRejectedValueOnce(new Error("Database error"));
+
+            const req = { 
+                body: { name: "Updated Electronics" },
+                params: { id: "1" }
+            };
+            const res = mockRes();
+
+            await updateCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: false,
+                    message: "Error while updating category",
+                })
+            );
+        });
+    });
 
     describe("Getting a list of all categories using getCategoriesController", () => {
         it("returns 200 success and returns all categories", async () => {
@@ -106,6 +247,55 @@ describe("Category controllers", () => {
         });
     });
 
-    // Gerald's Admin Actions
-    // describe("Deleting a category by ID using deleteCategoryController", () => {
+    describe("Deleting a category by ID using deleteCategoryController", () => {
+        it("returns 200 success when deleting an existing category", async () => {
+            const deletedCategory = { _id: "1", name: "Electronics", slug: "electronics" };
+            categoryModel.findByIdAndDelete.mockResolvedValueOnce(deletedCategory);
+
+            const req = { params: { id: "1" } };
+            const res = mockRes();
+
+            await deleteCategoryController(req, res);
+
+            expect(categoryModel.findByIdAndDelete).toHaveBeenCalledWith("1");
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                success: true,
+                message: "Category Deleted Successfully",
+            });
+        });
+
+        it("returns 404 error when category is not found", async () => {
+            categoryModel.findByIdAndDelete.mockResolvedValueOnce(null);
+
+            const req = { params: { id: "nonexistent" } };
+            const res = mockRes();
+
+            await deleteCategoryController(req, res);
+
+            expect(categoryModel.findByIdAndDelete).toHaveBeenCalledWith("nonexistent");
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.send).toHaveBeenCalledWith({
+                success: false,
+                message: "Category not found",
+            });
+        });
+
+        it("returns 500 error when database error occurs", async () => {
+            categoryModel.findByIdAndDelete.mockRejectedValueOnce(new Error("Database error"));
+
+            const req = { params: { id: "1" } };
+            const res = mockRes();
+
+            await deleteCategoryController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: false,
+                    message: "Error while deleting category",
+                })
+            );
+        });
+    });
 });

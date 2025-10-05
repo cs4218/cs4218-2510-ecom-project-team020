@@ -10,15 +10,16 @@ const { Option } = Select;
 
 const AdminOrders = () => {
   const [status, setStatus] = useState([
-    "Not Process",
+    "Not Processed",
     "Processing",
     "Shipped",
-    "deliverd",
-    "cancel",
+    "Delivered",
+    "Cancelled",
   ]);
-  const [changeStatus, setCHangeStatus] = useState("");
+  const [changeStatus, setChangeStatus] = useState("");
   const [orders, setOrders] = useState([]);
   const [auth, setAuth] = useAuth();
+  
   const getOrders = async () => {
     try {
       const { data } = await axios.get("/api/v1/auth/all-orders");
@@ -52,14 +53,14 @@ const AdminOrders = () => {
           <h1 className="text-center">All Orders</h1>
           {orders?.map((o, i) => {
             return (
-              <div className="border shadow">
+              <div className="border shadow" key={o._id || i}>
                 <table className="table">
                   <thead>
                     <tr>
                       <th scope="col">#</th>
                       <th scope="col">Status</th>
                       <th scope="col">Buyer</th>
-                      <th scope="col"> date</th>
+                      <th scope="col">Date</th>
                       <th scope="col">Payment</th>
                       <th scope="col">Quantity</th>
                     </tr>
