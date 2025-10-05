@@ -14,6 +14,23 @@ const CreateCategory = () => {
   // Handle category creation form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Client-side validation to match HTML5 constraints
+    if (!name || name.trim().length === 0) {
+      toast.error("Category name is required");
+      return;
+    }
+    
+    if (name.trim().length < 2) {
+      toast.error("Category name must be at least 2 characters long");
+      return;
+    }
+    
+    if (name.trim().length > 50) {
+      toast.error("Category name must not exceed 50 characters");
+      return;
+    }
+    
     try {
       const { data } = await axios.post("/api/v1/category/create-category", {
         name,
@@ -51,6 +68,23 @@ const CreateCategory = () => {
   // Handle category update submission
   const handleUpdate = async (e) => {
     e.preventDefault();
+    
+    // Client-side validation to match HTML5 constraints
+    if (!updatedName || updatedName.trim().length === 0) {
+      toast.error("Category name is required");
+      return;
+    }
+    
+    if (updatedName.trim().length < 2) {
+      toast.error("Category name must be at least 2 characters long");
+      return;
+    }
+    
+    if (updatedName.trim().length > 50) {
+      toast.error("Category name must not exceed 50 characters");
+      return;
+    }
+    
     try {
       const { data } = await axios.put(
         `/api/v1/category/update-category/${selected._id}`,

@@ -50,6 +50,7 @@ describe("CreateProduct Component", () => {
   });
 
   describe("Component Initialization", () => {
+    // Classification: Output-based (verifies DOM elements and attributes)
     it("should render with correct layout and title", () => {
       renderCreateProduct();
 
@@ -58,6 +59,7 @@ describe("CreateProduct Component", () => {
       expect(screen.getByText("Create Product")).toBeInTheDocument();
     });
 
+    // Classification: Communication-based (verifies API call on mount)
     it("should fetch categories on component mount", async () => {
       renderCreateProduct();
 
@@ -66,6 +68,7 @@ describe("CreateProduct Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies error handling for API failure)
     it("should display error toast when category fetch fails", async () => {
       axios.get.mockRejectedValue(new Error("Network error"));
       renderCreateProduct();
@@ -77,6 +80,7 @@ describe("CreateProduct Component", () => {
   });
 
   describe("Form Elements Rendering", () => {
+    // Classification: Output-based (verifies form elements and attributes)
     it("should render all form inputs with correct attributes", async () => {
       renderCreateProduct();
 
@@ -93,6 +97,8 @@ describe("CreateProduct Component", () => {
       expect(screen.getByText("CREATE PRODUCT")).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies input validation attributes)
+    // Technique: Boundary Value Analysis (verifies min=0, step=0.01 for price)
     it("should render price input with correct validation attributes", () => {
       renderCreateProduct();
 
@@ -102,6 +108,8 @@ describe("CreateProduct Component", () => {
       expect(priceInput).toHaveAttribute("step", "0.01");
     });
 
+    // Classification: Output-based (verifies input validation attributes)
+    // Technique: Boundary Value Analysis (verifies min=0 for quantity)
     it("should render quantity input with correct validation attributes", () => {
       renderCreateProduct();
 
@@ -113,6 +121,8 @@ describe("CreateProduct Component", () => {
 
   describe("Form Validation - Boundary Value Analysis", () => {
     describe("Price Input Validation", () => {
+      // Classification: Communication-based (verifies API call with minimum valid price)
+      // Technique: Boundary Value Analysis (minimum valid price = 0)
       it("should accept minimum valid price (0) and allow submission", async () => {
         renderCreateProduct();
         
@@ -149,6 +159,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies API call with decimal prices)
+      // Technique: Boundary Value Analysis (decimal validation with step=0.01)
       it("should accept decimal prices and allow submission", async () => {
         renderCreateProduct();
         
@@ -185,6 +197,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Output-based (verifies error toast), Communication-based (verifies no API call)
+      // Technique: Boundary Value Analysis (negative price = below minimum)
       it("should prevent submission with negative price", async () => {
         renderCreateProduct();
         
@@ -381,6 +395,8 @@ describe("CreateProduct Component", () => {
 
   describe("Form Submission - Equivalence Partitioning", () => {
     describe("Valid Submission Cases", () => {
+      // Classification: Communication-based (verifies successful API call), Output-based (verifies success toast and navigation)
+      // Technique: Equivalence Partitioning (valid complete form submission)
       it("should submit form successfully with all required fields", async () => {
         axios.post.mockResolvedValue({ data: { success: true } });
         renderCreateProduct();
@@ -429,6 +445,8 @@ describe("CreateProduct Component", () => {
         });
       });
 
+      // Classification: Output-based (verifies validation error toast), Communication-based (verifies no API call)
+      // Technique: Equivalence Partitioning (invalid empty form submission)
       it("should show error when submitting empty form", async () => {
         renderCreateProduct();
 
@@ -585,6 +603,557 @@ describe("CreateProduct Component", () => {
 
       const categorySelect = screen.getByText("Select a category");
       expect(categorySelect).toBeInTheDocument();
+    });
+  });
+
+  describe("Pairwise Combinatorial Testing - Product Creation", () => {
+    // Technique: Pairwise Combinatorial - Test different combinations of field types and validation states
+    it("should handle minimum valid inputs with numeric category", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Test Category")).toBeInTheDocument();
+      });
+
+      // Pairwise: minimum length inputs + first category + minimum price/quantity
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "AB" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "XY" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "0.01" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "1" }
+      });
+
+      // Select first category
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Test Category"));
+
+      // Upload photo
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+      });
+    });
+
+    it("should handle maximum valid inputs with special characters", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Books")).toBeInTheDocument();
+      });
+
+      // Pairwise: maximum length inputs + special characters + large numbers + second category
+      const longName = "A".repeat(100) + " & Special!";
+      const longDescription = "B".repeat(500) + " - Detailed & comprehensive description!";
+      
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: longName }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: longDescription }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "9999.99" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "1000" }
+      });
+
+      // Select second category
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Books"));
+
+      // Upload photo with different file type
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "product.png", { type: "image/png" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+      });
+    });
+
+    it("should handle decimal price with zero quantity combination", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+
+      // Pairwise: decimal price + zero quantity + third category + medium length strings
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Medium Length Product Name" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "This is a medium length description for testing purposes." }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "25.50" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "0" }
+      });
+
+      // Select third category
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Clothing"));
+
+      // Upload photo
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "clothing.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+      });
+    });
+
+    it("should handle API failure with valid inputs combination", async () => {
+      axios.post.mockRejectedValue(new Error("Network error"));
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Test Category")).toBeInTheDocument();
+      });
+
+      // Pairwise: valid inputs + API failure
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Test Description" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "10.00" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "5" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Test Category"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "fail.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to create product. Please check your input and try again.");
+      });
+    });
+
+    it("should handle success false response with complete form", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: false, message: "Product name already exists" }
+      });
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Books")).toBeInTheDocument();
+      });
+
+      // Pairwise: complete form + API success false
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Duplicate Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "This product already exists" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "15.99" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "3" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Books"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "duplicate.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Product name already exists");
+      });
+    });
+  });
+
+  describe("Decision Tree Testing - Product Creation Flow", () => {
+    // Decision Tree: Test the complete validation and creation flow
+    it("should follow decision tree - complete validation path", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Test Category")).toBeInTheDocument();
+      });
+
+      // Decision Path: Empty form -> validation fails -> fill form -> validation passes -> API success
+      
+      // Step 1: Try with empty form (should fail)
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Please fill in all required fields");
+      });
+
+      // Step 2: Fill only name (should still fail)
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Test Product" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Please fill in all required fields");
+      });
+
+      // Step 3: Fill all fields and succeed
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Complete description" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "20.00" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "10" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Test Category"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "complete.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+      });
+    });
+
+    it("should follow decision tree - price validation path", async () => {
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Test Category")).toBeInTheDocument();
+      });
+
+      // Decision Path: Valid fields -> invalid price -> fix price -> success
+      
+      // Fill valid fields first
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Price Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Testing price validation" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "5" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Test Category"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "price-test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // Test negative price
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "-10" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Price must be a non-negative number");
+      });
+
+      // Test invalid price (non-numeric)
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "abc" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Price must be a non-negative number");
+      });
+
+      // Fix price and succeed
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "25.99" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+      });
+    });
+
+    it("should follow decision tree - quantity validation path", async () => {
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Books")).toBeInTheDocument();
+      });
+
+      // Decision Path: Valid fields -> invalid quantity -> fix quantity -> success
+      
+      // Fill valid fields first
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Quantity Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Testing quantity validation" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "15.00" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Books"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "quantity-test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // Test negative quantity
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "-5" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Quantity must be a non-negative number");
+      });
+
+      // Test invalid quantity (non-integer)
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "xyz" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Quantity must be a non-negative number");
+      });
+
+      // Fix quantity and succeed
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "8" }
+      });
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+      });
+    });
+
+    it("should follow decision tree - API error recovery path", async () => {
+      // Setup API to fail first, then succeed
+      let callCount = 0;
+      axios.post.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error("Temporary server error"));
+        }
+        return Promise.resolve({
+          data: { success: true, message: "Product created successfully" }
+        });
+      });
+
+      renderCreateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+
+      // Fill complete valid form
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Recovery Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Testing API error recovery" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "30.00" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "12" }
+      });
+
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Clothing"));
+
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "recovery.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // First attempt - should fail
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to create product. Please check your input and try again.");
+      });
+
+      // Second attempt - should succeed (form data should still be there)
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+      });
+    });
+
+    it("should follow decision tree - complete CRUD preparation flow", async () => {
+      axios.post.mockResolvedValue({
+        data: { success: true, message: "Product created successfully" }
+      });
+      renderCreateProduct();
+
+      // Decision Path: Load categories -> Fill form -> Validate -> Create -> Navigate
+      
+      // Step 1: Verify categories loaded and API called
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+        expect(screen.getByText("Select a category")).toBeInTheDocument();
+      });
+      
+      // Open dropdown to verify category options
+      fireEvent.mouseDown(screen.getByText("Select a category"));
+      await waitFor(() => {
+        expect(screen.getByText("Test Category")).toBeInTheDocument();
+        expect(screen.getByText("Books")).toBeInTheDocument();
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+
+      // Step 2: Fill complete form systematically
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Complete Flow Product" }
+      });
+      
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "This product tests the complete creation flow from start to finish." }
+      });
+      
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "99.99" }
+      });
+      
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "50" }
+      });
+
+      // Step 3: Select category
+      const categorySelect = screen.getByText("Select a category");
+      fireEvent.mouseDown(categorySelect);
+      fireEvent.click(screen.getByText("Test Category"));
+
+      // Step 4: Upload photo
+      const fileInput = screen.getByText("Upload Photo").querySelector("input[type='file']");
+      const file = new File(["test"], "complete-flow.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // Step 5: Verify photo preview
+      await waitFor(() => {
+        expect(screen.getByAltText("product_photo")).toBeInTheDocument();
+      });
+
+      // Step 6: Submit and verify success flow
+      fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.post).toHaveBeenCalledWith(
+          "/api/v1/product/create-product",
+          expect.any(FormData)
+        );
+        expect(toast.success).toHaveBeenCalledWith("Product created successfully");
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+      });
+
+      // Step 7: Verify form reset (component state should be cleared)
+      // Note: This would be visible if we could inspect component state
+      // For now, we verify the navigation occurred which indicates form was processed
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
   });
 });
