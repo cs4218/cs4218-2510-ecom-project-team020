@@ -18,16 +18,16 @@ const CreateProduct = () => {
   const [shipping, setShipping] = useState("");
   const [photo, setPhoto] = useState("");
 
-  //get all category
+  // Fetch all categories from the API
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data?.success) {
-        setCategories(data?.category);
+        setCategories(data?.categories);
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      toast.error("Failed to load categories. Please refresh the page and try again.");
     }
   };
 
@@ -35,9 +35,28 @@ const CreateProduct = () => {
     getAllCategory();
   }, []);
 
-  //create product function
+  // Handle product creation form submission
   const handleCreate = async (e) => {
     e.preventDefault();
+    
+    if (!name || !description || !price || !quantity || !category || !photo) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    const priceValue = parseFloat(price);
+    const quantityValue = parseInt(quantity);
+    
+    if (isNaN(priceValue) || priceValue < 0) {
+      toast.error("Price must be a non-negative number");
+      return;
+    }
+    
+    if (isNaN(quantityValue) || quantityValue < 0) {
+      toast.error("Quantity must be a non-negative number");
+      return;
+    }
+    
     try {
       const productData = new FormData();
       productData.append("name", name);
@@ -46,19 +65,26 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.post(
+      const { data } = await axios.post(
         "/api/v1/product/create-product",
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
-        toast.success("Product Created Successfully");
+        toast.success("Product created successfully");
+        setName("");
+        setDescription("");
+        setPrice("");
+        setQuantity("");
+        setCategory("");
+        setShipping("");
+        setPhoto("");
         navigate("/dashboard/admin/products");
+      } else {
+        toast.error(data?.message || "Failed to create product");
       }
     } catch (error) {
       console.log(error);
-      toast.error("something went wrong");
+      toast.error("Failed to create product. Please check your input and try again.");
     }
   };
 
@@ -116,18 +142,20 @@ const CreateProduct = () => {
                 <input
                   type="text"
                   value={name}
-                  placeholder="write a name"
+                  placeholder="Enter product name"
                   className="form-control"
                   onChange={(e) => setName(e.target.value)}
+                  required
                 />
               </div>
               <div className="mb-3">
                 <textarea
-                  type="text"
                   value={description}
-                  placeholder="write a description"
+                  placeholder="Enter product description"
                   className="form-control"
                   onChange={(e) => setDescription(e.target.value)}
+                  required
+                  rows="3"
                 />
               </div>
 
@@ -135,24 +163,29 @@ const CreateProduct = () => {
                 <input
                   type="number"
                   value={price}
-                  placeholder="write a Price"
+                  placeholder="Enter price"
                   className="form-control"
                   onChange={(e) => setPrice(e.target.value)}
+                  required
+                  min="0"
+                  step="0.01"
                 />
               </div>
               <div className="mb-3">
                 <input
                   type="number"
                   value={quantity}
-                  placeholder="write a quantity"
+                  placeholder="Enter quantity"
                   className="form-control"
                   onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  min="0"
                 />
               </div>
               <div className="mb-3">
                 <Select
                   bordered={false}
-                  placeholder="Select Shipping "
+                  placeholder="Select Shipping"
                   size="large"
                   showSearch
                   className="form-select mb-3"
