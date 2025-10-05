@@ -50,7 +50,7 @@ describe("categoryRoutes wiring", () => {
     const res = await request(app).get("/get-category");
     expect(res.status).toBe(200);
     expect(res.body.hit).toBe("list");
-    expect(res.body.calls).toEqual([]); // none ran
+    expect(res.body.calls).toEqual([]);
   });
 
   test("GET /single-category/:slug has no auth middlewares", async () => {

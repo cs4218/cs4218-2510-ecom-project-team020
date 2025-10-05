@@ -49,6 +49,12 @@ describe("Category model", () => {
         Category.create({ name: 123, slug: "123123" })
       ).rejects.toMatchObject({ code: 11000 });
     });
+
+    it('handles special characters in category names', async () => {
+      const created = await Category.create({ name: "Café ☕", slug: "cafe" });
+      expect(created.name).toBe("Café ☕");
+      expect(created.slug).toBe("cafe");
+    });
   });
 
   describe("Category model slug unit tests", () => {
@@ -94,6 +100,11 @@ describe("Category model", () => {
       await expect(
         Category.create({ name: "Tablets", slug: "ELECTRONICS" })
       ).rejects.toMatchObject({ code: 11000 });
+    });
+    
+    it('handles special characters in category slugs', async () => {
+      const created = await Category.create({ name: "Café ☕", slug: "cafe-☕" });
+      expect(created.slug).toBe("cafe-☕");
     });
   });
 });
