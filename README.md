@@ -58,6 +58,7 @@ AI Declaration: Unit tests generated with AI assistance but were all curated, va
 | AuthProvider          | `client/src/context/auth.test.js`          | Manages and provides authentication state across React components.                                                                                        |
 
 **Alicia Yap @wapisai**
+
 AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
 
 | Domain                               | File                                                | Description                                                                                                                                                                 |
