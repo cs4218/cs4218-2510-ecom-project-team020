@@ -172,7 +172,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error In Search Product API",
+          message: "Error in search product API",
           error: expect.any(Error),
         })
       );
@@ -198,7 +198,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Single Product Fetched",
+          message: "Single product fetched successfully",
           product: mockProduct,
         })
       );
@@ -219,7 +219,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Single Product Fetched",
+          message: "Single product fetched successfully",
           product: null,
         })
       );
@@ -239,7 +239,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error while getting single product",
+          message: "Error getting single product",
           error: expect.any(Error),
         })
       );
@@ -325,7 +325,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "error while getting related product",
+          message: "Error getting related product",
           error: expect.any(Error),
         })
       );
@@ -389,7 +389,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error while getting photo",
+          message: "Error getting photo",
         })
       );
     });
@@ -408,7 +408,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error while getting photo",
+          message: "Error getting photo",
           error: expect.any(Error),
         })
       );
@@ -439,7 +439,7 @@ describe("ProductController", () => {
         expect.objectContaining({
           success: true,
           countTotal: mockProducts.length,
-          message: "ALlProducts ",
+          message: "All products fetched successfully",
           products: mockProducts,
         })
       );
@@ -463,7 +463,7 @@ describe("ProductController", () => {
         expect.objectContaining({
           success: true,
           countTotal: 0,
-          message: "ALlProducts ",
+          message: "All products fetched successfully",
           products: [],
         })
       );
@@ -483,7 +483,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in getting products",
+          message: "Error getting products",
           error: "DB Error",
         })
       );
@@ -636,7 +636,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "error in per page ctrl",
+          message: "Error in per page control",
           error: expect.any(Error),
         })
       );
@@ -902,7 +902,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error WHile Filtering Products",
+          message: "Error Filtering Products",
           error: expect.any(Error),
         })
       );
@@ -1060,7 +1060,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Created Successfully",
+          message: "Product created successfully",
         })
       );
     });
@@ -1111,7 +1111,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Created Successfully",
+          message: "Product created successfully",
         })
       );
     });
@@ -1139,7 +1139,7 @@ describe("ProductController", () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
-        error: "photo is Required and should be less then 1mb",
+        error: "Photo is required and should be less then 1mb",
       });
     });
 
@@ -1194,7 +1194,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Created Successfully",
+          message: "Product created successfully",
         })
       );
     });
@@ -1231,7 +1231,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Created Successfully",
+          message: "Product created successfully",
         })
       );
     });
@@ -1260,7 +1260,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in creating product",
+          message: "Error creating product",
           error: expect.any(Error),
         })
       );
@@ -1317,7 +1317,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Updated Successfully",
+          message: "Product updated successfully",
         })
       );
     });
@@ -1396,7 +1396,7 @@ describe("ProductController", () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith({
-        error: "photo is Required and should be less then 1mb",
+        error: "Photo is required and should be less then 1mb",
       });
     });
 
@@ -1423,7 +1423,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error in Update product",
+          message: "Error updating product",
           error: expect.any(Error),
         })
       );
@@ -1450,7 +1450,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Deleted successfully",
+          message: "Product deleted successfully",
         })
       );
     });
@@ -1470,7 +1470,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Product Deleted successfully",
+          message: "Product deleted successfully",
         })
       );
     });
@@ -1489,7 +1489,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error while deleting product",
+          message: "Error deleting product",
           error: expect.any(Error),
         })
       );
@@ -1565,7 +1565,7 @@ describe("ProductController", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error While Getting products",
+          message: "Error getting products",
           error: expect.any(Error),
         })
       );
