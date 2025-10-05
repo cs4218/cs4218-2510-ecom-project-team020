@@ -35,6 +35,28 @@ AI Declaration: Unit tests files were generated with AI assistance but ALL test 
 | Category Controller (CUD)     | `controllers/categoryController.test.js`       | Create, Update, Delete category operations work correctly with proper error handling and data validation.                                            |
 | Category Routes (CUD)         | `routes/categoryRoutes.test.js`               | Category create, update, delete endpoints are properly secured, mapped, and handle authentication requirements.                                      |
 
+**Ritika Manish Joshi @rmj1405**
+
+AI Declaration: Unit tests generated with AI assistance but were all curated, validated and refined by me.
+| Domain                 | File                                       | Description                                                                                                                                         |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| registerController        | `controllers/authController.test.js`             | Handles user registration, validating required fields and preventing duplicate accounts.                                                                |
+| loginController   | `controllers/authController.test.js`   | Authenticates users by verifying credentials and issues a JWT token on success.                                           |
+| forgotPasswordController    | `controllers/authController.test.js`     | Allows users to reset their password after verifying their identity and security answer.                                                |
+| updateProfileController  | `controllers/authController.test.js`           | Updates user profile details, including password, with validation.                                                                                       |
+| getOrdersController | `controllers/authController.test.js`            | Retrieves all orders placed by the authenticated user.                                                                        |
+| getAllOrdersController     | `controllers/authController.test.js`    | Fetches all orders in the system for administrative review. |
+| orderStatusController         | `controllers/authController.test.js`          | Updates the status of a specific order, validating input and permissions.                                                |
+| authMiddleware            | `middlewares/authMiddleware.test.js`        | Manages and provides authentication state across React components.                             |
+| authHelper           | Integration tests are more appropriate and will be created in Milestone 2.      | Provides utility functions to securely hash passwords and verify user credentials using bcrypt.                          |
+| Order Page            | `client/src/pages/Orders.test.js`        | Displays a user's order history and current orders, allowing status tracking and details view.                             |
+| Profile Page            | `client/src/pages/Profile.test.js`        | Shows and allows editing of user profile information, including contact and password updates.                           |
+| Register Page            | `client/src/pages/Register.test.js`        | Provides a registration form for new users with validation and error handling.                           |
+| Home Page            | `client/src/pages/Homepage.test.js`        | Renders the main landing page with featured products, categories, and other content.
+| Dashboard Page            | `client/src/pages/Dashboard.test.js`          | Displays user information and links to user's orders and profile update form.                                                                                          |
+| Footer            | `client/src/pages/Footer.test.js`          | Shows site-wide footer with navigation links, contact info, and policy references.                                                                                    |
+| AuthProvider          | `client/src/context/auth.test.js`          | Manages and provides authentication state across React components.                                                                                        |
+
 # Project Information 
 
 ## 1. Project Introduction
