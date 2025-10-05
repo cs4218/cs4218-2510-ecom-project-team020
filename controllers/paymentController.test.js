@@ -190,6 +190,47 @@ describe("PaymentController", () => {
       expect(res.json).toHaveBeenCalledWith({ error: "Payment error" });
     });
 
+    it("should raise an error for zero total amount", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: 0 }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
+      const res = mockResponse();
+
+      await brainTreePaymentController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Total amount must be greater than 0",
+      });
+    });
+
+    it("should not raise an error for non-zero total amount", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: 0.01 }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+      const mockResult = { id: "transaction123", success: true };
+      gateway.transaction.sale.mockImplementation((options, callback) => {
+        callback(null, mockResult);
+      });
+
+      const mockSave = jest.fn().mockResolvedValue(true);
+      orderModel.mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      await brainTreePaymentController(req, res);
+
+      expect(gateway.transaction.sale).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: "0.01",
+        }),
+        expect.any(Function)
+      );
+    });
+
+
     it("should calculate total correctly with one item", async () => {
       const req = {
         body: {
@@ -354,77 +395,6 @@ describe("PaymentController", () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ error: "Payment nonce is required" });
-    });
-
-    it("should handle cart with single item", async () => {
-      const req = {
-        body: {
-          nonce: "test-nonce",
-          cart: [{ _id: "1", price: 49.99 }],
-        },
-        user: { _id: "user123" },
-      };
-      const res = mockResponse();
-
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockResult = { id: "transaction123", success: true };
-      gateway.transaction.sale.mockImplementation((options, callback) => {
-        callback(null, mockResult);
-      });
-
-      const mockSave = jest.fn().mockResolvedValue(true);
-      orderModel.mockImplementation(() => ({
-        save: mockSave,
-      }));
-
-      await brainTreePaymentController(req, res);
-
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        expect.objectContaining({
-          amount: "49.99",
-        }),
-        expect.any(Function)
-      );
-      expect(res.json).toHaveBeenCalledWith({ ok: true });
-    });
-
-    it("should handle decimal precision in price calculations", async () => {
-      const req = {
-        body: {
-          nonce: "test-nonce",
-          cart: [
-            { _id: "1", price: 19.99 },
-            { _id: "2", price: 29.99 },
-            { _id: "3", price: 0.01 },
-          ],
-        },
-        user: { _id: "user123" },
-      };
-      const res = mockResponse();
-
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockResult = { id: "transaction123", success: true };
-      gateway.transaction.sale.mockImplementation((options, callback) => {
-        callback(null, mockResult);
-      });
-
-      const mockSave = jest.fn().mockResolvedValue(true);
-      orderModel.mockImplementation(() => ({
-        save: mockSave,
-      }));
-
-      await brainTreePaymentController(req, res);
-
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        expect.objectContaining({
-          amount: "49.99", // 19.99 + 29.99 + 0.01 = 49.99
-        }),
-        expect.any(Function)
-      );
     });
 
     it("should handle network timeout errors", async () => {

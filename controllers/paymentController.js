@@ -55,6 +55,11 @@ export const brainTreePaymentController = async (req, res) => {
       return sum + price;
     }, 0).toFixed(2);
 
+    if (total <= 0) {
+      res.status(400).json({ error: "Total amount must be greater than 0" });
+      return;
+    }
+
     // Process transaction (wrap in Promise)
     const result = await new Promise((resolve, reject) => {
       gateway.transaction.sale(
