@@ -14,12 +14,14 @@ const renderAdminMenu = () => {
 
 describe("AdminMenu Component", () => {
   describe("Component Rendering", () => {
+    // Classification: Output-based (verifies DOM text content)
     it("should render admin panel heading", () => {
       renderAdminMenu();
 
       expect(screen.getByText("Admin Panel")).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies all navigation links are rendered)
     it("should render all navigation links", () => {
       renderAdminMenu();
 
@@ -30,6 +32,7 @@ describe("AdminMenu Component", () => {
       expect(screen.getByText("Users")).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies link attributes and navigation URLs)
     it("should render navigation links with correct href attributes", () => {
       renderAdminMenu();
 
@@ -57,6 +60,7 @@ describe("AdminMenu Component", () => {
   });
 
   describe("Navigation Structure", () => {
+    // Classification: Output-based (verifies exact number of navigation elements)
     it("should render exactly 5 navigation links", () => {
       renderAdminMenu();
 
@@ -64,6 +68,7 @@ describe("AdminMenu Component", () => {
       expect(navLinks).toHaveLength(5);
     });
 
+    // Classification: Output-based (verifies navigation order and structure)
     it("should render links in correct order", () => {
       renderAdminMenu();
 

@@ -33,6 +33,8 @@ describe("Category controllers", () => {
     });
 
     describe("Creating a new category using createCategoryController", () => {
+        // Classification: Output-based (verifies HTTP response), Communication-based (verifies database interaction)
+        // Technique: Equivalence Partitioning (valid category creation scenario)
         it("returns 201 success when creating a new category", async () => {
             const mockCategory = { _id: "1", name: "Electronics", slug: "electronics" };
             categoryModel.findOne.mockResolvedValueOnce(null); // No existing category
@@ -53,6 +55,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response)
+        // Technique: Boundary Value Analysis (empty/missing required field)
         it("returns 400 error when name is missing", async () => {
             const req = { body: {} };
             const res = mockRes();
@@ -65,6 +69,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP conflict response), Communication-based (verifies database query)
+        // Technique: Equivalence Partitioning (duplicate category scenario)
         it("returns 409 error when category already exists", async () => {
             const existingCategory = { _id: "1", name: "Electronics", slug: "electronics" };
             categoryModel.findOne.mockResolvedValueOnce(existingCategory);
@@ -82,6 +88,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response), Communication-based (verifies error handling)
+        // Technique: Equivalence Partitioning (database error scenario)
         it("returns 500 error when database error occurs", async () => {
             categoryModel.findOne.mockRejectedValueOnce(new Error("Database error"));
 
@@ -101,6 +109,8 @@ describe("Category controllers", () => {
     });
 
     describe("Updating a category using updateCategoryController", () => {
+        // Classification: Output-based (verifies HTTP response), Communication-based (verifies database update)
+        // Technique: Equivalence Partitioning (valid category update scenario)
         it("returns 200 success when updating an existing category", async () => {
             const updatedCategory = { _id: "1", name: "Updated Electronics", slug: "updated-electronics" };
             categoryModel.findByIdAndUpdate.mockResolvedValueOnce(updatedCategory);
@@ -126,6 +136,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response)
+        // Technique: Boundary Value Analysis (empty/missing required field)
         it("returns 400 error when name is missing", async () => {
             const req = { 
                 body: {},
@@ -141,6 +153,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP not found response), Communication-based (verifies database query)
+        // Technique: Equivalence Partitioning (non-existent category scenario)
         it("returns 404 error when category is not found", async () => {
             categoryModel.findByIdAndUpdate.mockResolvedValueOnce(null);
 
@@ -159,6 +173,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response), Communication-based (verifies error handling)
+        // Technique: Equivalence Partitioning (database error scenario)
         it("returns 500 error when database error occurs", async () => {
             categoryModel.findByIdAndUpdate.mockRejectedValueOnce(new Error("Database error"));
 
@@ -181,6 +197,8 @@ describe("Category controllers", () => {
     });
 
     describe("Getting a list of all categories using getCategoriesController", () => {
+        // Classification: Output-based (verifies HTTP response), Communication-based (verifies database query)
+        // Technique: Equivalence Partitioning (successful data retrieval scenario)
         it("returns 200 success and returns all categories", async () => {
             const docs = [{ _id: "1", name: "A" }, { _id: "2", name: "B" }];
             categoryModel.find.mockResolvedValueOnce(docs);
@@ -199,6 +217,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response), Communication-based (verifies error handling)
+        // Technique: Equivalence Partitioning (database error scenario)
         it("returns 500 error if error in retrieving all categories", async () => {
             categoryModel.find.mockRejectedValueOnce(new Error("error"));
             const req = {};
@@ -215,6 +235,8 @@ describe("Category controllers", () => {
     });
 
     describe("Getting a single category by slug using singleCategoryController", () => {
+        // Classification: Output-based (verifies HTTP response), Communication-based (verifies database query)
+        // Technique: Equivalence Partitioning (successful single item retrieval scenario)
         it("returns 200 success and returns one category by slug", async () => {
             const doc = { _id: "1", name: "A", slug: "a" };
             categoryModel.findOne.mockResolvedValueOnce(doc);
@@ -233,6 +255,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response), Communication-based (verifies error handling)
+        // Technique: Equivalence Partitioning (database error scenario)
         it("returns 500 error if error in retrieving categor", async () => {
             categoryModel.findOne.mockRejectedValueOnce(new Error("x"));
             const res = mockRes();
@@ -248,6 +272,8 @@ describe("Category controllers", () => {
     });
 
     describe("Deleting a category by ID using deleteCategoryController", () => {
+        // Classification: Output-based (verifies HTTP response), Communication-based (verifies database deletion)
+        // Technique: Equivalence Partitioning (successful deletion scenario)
         it("returns 200 success when deleting an existing category", async () => {
             const deletedCategory = { _id: "1", name: "Electronics", slug: "electronics" };
             categoryModel.findByIdAndDelete.mockResolvedValueOnce(deletedCategory);
@@ -265,6 +291,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP not found response), Communication-based (verifies database query)
+        // Technique: Equivalence Partitioning (non-existent category scenario)
         it("returns 404 error when category is not found", async () => {
             categoryModel.findByIdAndDelete.mockResolvedValueOnce(null);
 
@@ -281,6 +309,8 @@ describe("Category controllers", () => {
             });
         });
 
+        // Classification: Output-based (verifies HTTP error response), Communication-based (verifies error handling)
+        // Technique: Equivalence Partitioning (database error scenario)
         it("returns 500 error when database error occurs", async () => {
             categoryModel.findByIdAndDelete.mockRejectedValueOnce(new Error("Database error"));
 

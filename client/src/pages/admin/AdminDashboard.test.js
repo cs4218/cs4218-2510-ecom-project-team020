@@ -58,6 +58,8 @@ describe('AdminDashboard Component', () => {
         jest.clearAllMocks();
     });
 
+    // Classification: Output-based (verifies DOM elements), State-based (verifies auth context data display)
+    // Technique: Equivalence Partitioning (valid auth data class)
     it('renders admin dashboard correctly', () => {
         const { getByTestId, getByText } = render(
             <MemoryRouter initialEntries={['/dashboard/admin']}>
@@ -74,6 +76,7 @@ describe('AdminDashboard Component', () => {
         expect(getByText(`Admin Contact : ${mockAuth.user.phone}`)).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies CSS classes and DOM structure)
     it('renders with proper CSS classes and structure', () => {
         const { container } = render(
             <MemoryRouter initialEntries={['/dashboard/admin']}>
@@ -90,6 +93,8 @@ describe('AdminDashboard Component', () => {
         expect(container.querySelector('.card.w-75.p-3')).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies graceful handling), State-based (verifies null auth state)
+    // Technique: Equivalence Partitioning (null user data class)
     it('handles null auth user gracefully', () => {
         // Override the mock for this specific test
         const { useAuth } = require('../../context/auth');
@@ -108,6 +113,8 @@ describe('AdminDashboard Component', () => {
         expect(getByText('Admin Contact :')).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies graceful handling), State-based (verifies undefined auth state)
+    // Technique: Equivalence Partitioning (undefined auth data class)
     it('handles undefined auth gracefully', () => {
         // Override the mock for this specific test
         const { useAuth } = require('../../context/auth');
@@ -126,6 +133,8 @@ describe('AdminDashboard Component', () => {
         expect(getByText('Admin Contact :')).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies UI layout stability), State-based (verifies handling of very long data)
+    // Technique: Equivalence Partitioning (extremely long string data class)
     it('handles very long strings without breaking UI layout', () => {
         const veryLongName = 'A'.repeat(500);
         const veryLongEmail = 'verylongemailaddress'.repeat(20) + '@example.com';
@@ -162,6 +171,8 @@ describe('AdminDashboard Component', () => {
         expect(cardElement).toHaveClass('w-75');
     });
 
+    // Classification: Output-based (verifies special character rendering), State-based (verifies unicode data handling)
+    // Technique: Equivalence Partitioning (special characters and unicode data class)
     it('handles special characters and unicode without breaking', () => {
         const specialCharAuth = {
             user: {

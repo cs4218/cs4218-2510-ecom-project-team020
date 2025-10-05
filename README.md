@@ -21,6 +21,20 @@ AI Declaration: Unit tests files were generated with AI assistance but ALL test 
 | Cart Page              | `client/src/pages/CartPage.test.js`        | Cart shows the right total, allows item removal, fetches payment token, and completes or aborts checkout appropriately.                             |
 | Policy Page            | `client/src/pages/Policy.test.js`          | Privacy policy content is present and visible to users.                                                                                             |
 
+**Gerald Ng Jun Xiang @geraldngjx**
+
+AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
+| Domain                        | File                                            | Description                                                                                                                                         |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin Dashboard               | `client/src/pages/admin/AdminDashboard.test.js` | Admin dashboard displays correct user statistics, navigation elements, and handles authentication states properly.                                   |
+| Admin Menu Component          | `client/src/components/AdminMenu.test.js`      | Admin navigation menu renders all administrative links correctly and maintains proper routing functionality.                                         |
+| Category Form Component       | `client/src/components/Form/CategoryForm.test.js` | Category creation form validates input, handles submissions, and displays appropriate feedback for category management.                              |
+| Create Category Page          | `client/src/pages/admin/CreateCategory.test.js` | Admin can create new categories with proper validation, error handling, and success notifications using pairwise combinatorial and decision tree testing. |
+| Create Product Page           | `client/src/pages/admin/CreateProduct.test.js`  | Admin can create new products with comprehensive field validation, file uploads, and API integration using pairwise combinatorial and decision tree testing. |
+| Update Product Page           | `client/src/pages/admin/UpdateProduct.test.js`  | Admin can update existing products with form pre-population, validation, deletion functionality using pairwise combinatorial testing.               |
+| Category Controller (CUD)     | `controllers/categoryController.test.js`       | Create, Update, Delete category operations work correctly with proper error handling and data validation.                                            |
+| Category Routes (CUD)         | `routes/categoryRoutes.test.js`               | Category create, update, delete endpoints are properly secured, mapped, and handle authentication requirements.                                      |
+
 # Project Information 
 
 ## 1. Project Introduction
