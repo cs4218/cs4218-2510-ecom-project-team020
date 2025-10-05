@@ -6,13 +6,25 @@ module.exports = {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/**/*.test.js",
-              "<rootDir>/{controllers,models,routes}/**/*.test.js"
+  testMatch: [
+    "<rootDir>/controllers/*.test.js",
+    "<rootDir>/middlewares/*.test.js",
+    "<rootDir>/helpers/*.test.js",
+    "<rootDir>/routes/*.test.js",
+    "<rootDir>/models/*.test.js",
+    "<rootDir>/config/*.test.js",
   ],
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/**", "helpers/**", "middlewares/**", "models/**", "routes/**"],
+  collectCoverageFrom: [
+    "<rootDir>/controllers/**",
+    "<rootDir>/helpers/**",
+    "<rootDir>/middlewares/**",
+    "<rootDir>/models/**",
+    "<rootDir>/routes/**",
+    "<rootDir>/config/**",
+  ],
   coverageThreshold: {
     global: {
       lines: 100,

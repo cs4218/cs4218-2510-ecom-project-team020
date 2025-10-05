@@ -1,6 +1,5 @@
 import fs from "fs";
 import slugify from "slugify";
-import braintree from "braintree";
 import dotenv from "dotenv";
 import productModel from "../models/productModel.js";
 import categoryModel from "../models/categoryModel.js";
@@ -8,20 +7,12 @@ import orderModel from "../models/orderModel.js";
 
 dotenv.config();
 
-// Payment gateway
-const gateway = new braintree.BraintreeGateway({
-  environment: braintree.Environment.Sandbox,
-  merchantId: process.env.BRAINTREE_MERCHANT_ID,
-  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
-  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
-});
-
-// Create
 export const createProductController = async (req, res) => {
   try {
-    const { name, description, price, category, quantity, shipping } = req.fields || {};
-    const photo = req.files?.photo;
-
+    const { name, description, price, category, quantity, shipping } =
+      req.fields;
+    const { photo } = req.files;
+    //validation
     switch (true) {
       case !name:
         return res.status(400).send({ success: false, error: "Name is required" });
@@ -61,8 +52,8 @@ export const createProductController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error creating product",
-      error: error.message,
+      error,
+      message: "Error in creating product",
     });
   }
 };
@@ -87,7 +78,7 @@ export const getProductController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error getting products",
+      message: "Error in getting products",
       error: error.message,
     });
   }
@@ -117,8 +108,8 @@ export const getSingleProductController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error getting single product",
-      error: error.message,
+      message: "Error while getting single product",
+      error,
     });
   }
 };
@@ -136,8 +127,8 @@ export const productPhotoController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error getting photo",
-      error: error.message,
+      message: "Error while getting photo",
+      error,
     });
   }
 };
@@ -213,8 +204,8 @@ export const updateProductController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error updating product",
-      error: error.message,
+      error,
+      message: "Error in update product",
     });
   }
 };
@@ -281,7 +272,7 @@ export const productListController = async (req, res) => {
 // Search
 export const searchProductController = async (req, res) => {
   try {
-    const { keyword = "" } = req.params;
+    const { keyword } = req.params;
     const results = await productModel
       .find({
         $or: [
@@ -290,8 +281,7 @@ export const searchProductController = async (req, res) => {
         ],
       })
       .select("-photo");
-
-    res.status(200).send({ success: true, results });
+    res.json(results);
   } catch (error) {
     console.error(error);
     res.status(500).send({
@@ -302,7 +292,7 @@ export const searchProductController = async (req, res) => {
   }
 };
 
-// Related
+// similar products
 export const relatedProductController = async (req, res) => {
   try {
     const { pid, cid } = req.params;
@@ -317,8 +307,8 @@ export const relatedProductController = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error while getting related products",
-      error: error.message,
+      message: "error while getting related product",
+      error,
     });
   }
 };
@@ -340,63 +330,5 @@ export const productCategoryController = async (req, res) => {
       message: "Error while getting products by category",
       error: error.message,
     });
-  }
-};
-
-// Braintree: client token
-export const braintreeTokenController = async (req, res) => {
-  try {
-    gateway.clientToken.generate({}, (err, response) => {
-      if (err) return res.status(500).send({ success: false, message: "Token error", error: err });
-      return res.status(200).send(response);
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ success: false, message: "Token error", error: error.message });
-  }
-};
-
-// Braintree: payment
-export const brainTreePaymentController = async (req, res) => {
-  try {
-    const { nonce, cart = [] } = req.body || {};
-    if (!Array.isArray(cart) || cart.length === 0) {
-      return res.status(400).send({ success: false, message: "Cart is empty" });
-    }
-
-    const total = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
-
-    gateway.transaction.sale(
-      {
-        amount: total.toFixed(2),
-        paymentMethodNonce: nonce,
-        options: { submitForSettlement: true },
-      },
-      async (error, result) => {
-        if (error || !result?.success) {
-          return res
-            .status(500)
-            .send({ success: false, message: "Payment failed", error: error || result });
-        }
-
-        try {
-          await new orderModel({
-            products: cart,
-            payment: result,
-            buyer: req.user?._id,
-          }).save();
-
-          return res.status(200).send({ success: true, ok: true });
-        } catch (saveErr) {
-          console.error(saveErr);
-          return res
-            .status(500)
-            .send({ success: false, message: "Order save failed", error: saveErr.message });
-        }
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ success: false, message: "Payment error", error: error.message });
   }
 };

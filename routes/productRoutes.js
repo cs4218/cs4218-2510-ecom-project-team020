@@ -1,7 +1,5 @@
 import express from "express";
 import {
-  brainTreePaymentController,
-  braintreeTokenController,
   createProductController,
   deleteProductController,
   getProductController,
@@ -11,10 +9,14 @@ import {
   productFiltersController,
   productListController,
   productPhotoController,
-  realtedProductController,
+  relatedProductController,
   searchProductController,
   updateProductController,
 } from "../controllers/productController.js";
+import {
+  brainTreePaymentController,
+  braintreeTokenController,
+} from "../controllers/paymentController.js";
 import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
 import formidable from "express-formidable";
 
@@ -46,7 +48,7 @@ router.get("/get-product/:slug", getSingleProductController);
 //get photo
 router.get("/product-photo/:pid", productPhotoController);
 
-//delete rproduct
+//delete product
 router.delete("/delete-product/:pid", deleteProductController);
 
 //filter product
@@ -62,7 +64,7 @@ router.get("/product-list/:page", productListController);
 router.get("/search/:keyword", searchProductController);
 
 //similar product
-router.get("/related-product/:pid/:cid", realtedProductController);
+router.get("/related-product/:pid/:cid", relatedProductController);
 
 //category wise product
 router.get("/product-category/:slug", productCategoryController);

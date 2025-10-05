@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Environment variables
 .env
@@ -52,3 +51,4 @@ Thumbs.db
 
 # Documentation (custom)
 /.md/
+/.cursor/

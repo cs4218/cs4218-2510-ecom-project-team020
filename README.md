@@ -1,6 +1,28 @@
 # CS4218 Project - Virtual Vault
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/17570194597/job/49904621693
 
+# Milestone 1
+Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/17570194597/job/49904621693
+
+## Workload Distribution
+
+**Tan Wee Kian, Justin @jyztintan**
+
+AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
+| Domain                 | File                                       | Description                                                                                                                                         |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Category Model         | `models/categoryModel.test.js`             | Category must have a name; names must be unique; slugs are consistently lower-cased.                                                                |
+| Category Controllers   | `controllers/categoryController.test.js`   | Category APIs return complete, correct data for list and single views; failures surface as proper errors.                                           |
+| `useCategory` Hook     | `client/src/hooks/useCategory.test.js`     | App loads categories on start, shows empty state when none, and stays functional if the API fails.                                                  |
+| Categories Page (UI)   | `client/src/pages/Categories.js`           | Users can see a full, accurate list of available categories.                                                                                        |
+| Category Routes Wiring | `routes/categoryRoutes.test.js`            | Public category endpoints are accessible without login and correctly mapped.                                                                        |
+| Payment Controller     | `controllers/paymentController.test.js`    | Shoppers can obtain a payment token; checkout total is correct; orders are created only on successful payment; failed payments never create orders. |
+| Cart Context           | `client/src/context/cart.test.js`          | Cart state persists across sessions, updates reliably, and safely handles empty/corrupt saved data.                                                 |
+| Cart Page              | `client/src/pages/CartPage.test.js`        | Cart shows the right total, allows item removal, fetches payment token, and completes or aborts checkout appropriately.                             |
+| Policy Page            | `client/src/pages/Policy.test.js`          | Privacy policy content is present and visible to users.                                                                                             |
+
+# Project Information 
+
 ## 1. Project Introduction
 
 Virtual Vault is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) e-commerce website, offering seamless connectivity and user-friendly features. The platform provides a robust framework for online shopping. The website is designed to adapt to evolving business needs and can be efficiently extended.
