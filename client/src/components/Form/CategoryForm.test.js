@@ -236,23 +236,47 @@ describe("CategoryForm Component", () => {
 
     describe("Edge Cases", () => {
       // Classification: State-based (verifies setValue callback with whitespace input)
-      // Technique: Equivalence Partitioning (edge case - whitespace-only input)
-      it("should handle whitespace-only input", () => {
+      // Technique: Equivalence Partitioning (edge case - whitespace-only input during typing)
+      it("should allow whitespace-only input during typing but prevent submission", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
 
+        // Typing whitespace should be allowed
         fireEvent.change(input, { target: { value: "   " } });
         expect(mockSetValue).toHaveBeenCalledWith("   ");
       });
 
-      // Classification: State-based (verifies setValue callback with trimmed input)
-      // Technique: Equivalence Partitioning (edge case - leading/trailing spaces)
-      it("should handle input with leading/trailing spaces", () => {
+      // Classification: State-based (verifies setValue callback with trimmed whitespace)
+      // Technique: Equivalence Partitioning (edge case - whitespace trimming on blur)
+      it("should trim whitespace-only input on blur", () => {
+        renderCategoryForm("   ");
+        const input = screen.getByPlaceholderText("Enter new category");
+        
+        // On blur, it should be trimmed to empty
+        fireEvent.blur(input);
+        expect(mockSetValue).toHaveBeenCalledWith("");
+      });
+
+      // Classification: State-based (verifies setValue callback with spaced input)
+      // Technique: Equivalence Partitioning (edge case - leading/trailing spaces during typing)
+      it("should handle input with leading/trailing spaces during typing", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
 
+        // During typing, spaces should be preserved
         fireEvent.change(input, { target: { value: "  Electronics  " } });
         expect(mockSetValue).toHaveBeenCalledWith("  Electronics  ");
+      });
+
+      // Classification: State-based (verifies setValue callback with trimmed spaced input)
+      // Technique: Equivalence Partitioning (edge case - leading/trailing spaces trimming on blur)
+      it("should trim leading/trailing spaces on blur", () => {
+        renderCategoryForm("  Electronics  ");
+        const input = screen.getByPlaceholderText("Enter new category");
+        
+        // On blur, leading/trailing spaces should be trimmed
+        fireEvent.blur(input);
+        expect(mockSetValue).toHaveBeenCalledWith("Electronics");
       });
 
       // Classification: State-based (verifies setValue callback with mixed case)
@@ -263,6 +287,48 @@ describe("CategoryForm Component", () => {
 
         fireEvent.change(input, { target: { value: "eLeCtrOnIcS" } });
         expect(mockSetValue).toHaveBeenCalledWith("eLeCtrOnIcS");
+      });
+
+      // Classification: State-based (verifies setValue callback with various whitespace scenarios)
+      // Technique: Equivalence Partitioning (edge case - different whitespace patterns during typing)
+      it("should handle various whitespace patterns correctly during typing", () => {
+        renderCategoryForm();
+        const input = screen.getByPlaceholderText("Enter new category");
+
+        // Test tabs and spaces only - preserved during typing
+        fireEvent.change(input, { target: { value: "\t  \t" } });
+        expect(mockSetValue).toHaveBeenCalledWith("\t  \t");
+      });
+
+      // Classification: State-based (verifies setValue callback with trimmed tab/space input)
+      // Technique: Equivalence Partitioning (edge case - tabs and spaces trimming on blur)
+      it("should trim tabs and spaces on blur", () => {
+        renderCategoryForm("\t  \t");
+        const input = screen.getByPlaceholderText("Enter new category");
+        
+        fireEvent.blur(input);
+        expect(mockSetValue).toHaveBeenCalledWith("");
+      });
+
+      // Classification: State-based (verifies setValue callback with trimmed mixed whitespace content)
+      // Technique: Equivalence Partitioning (edge case - mixed whitespace with content trimming on blur)
+      it("should trim mixed whitespace with content on blur", () => {
+        renderCategoryForm("\t  Books  \n");
+        const input = screen.getByPlaceholderText("Enter new category");
+        
+        fireEvent.blur(input);
+        expect(mockSetValue).toHaveBeenCalledWith("Books");
+      });
+
+      // Classification: Communication-based (verifies form submission prevention)
+      // Technique: Equivalence Partitioning (edge case - whitespace submission prevention)
+      it("should prevent submission of whitespace-only categories", () => {
+        const { container } = renderCategoryForm("   ");
+        const form = container.querySelector("form");
+
+        fireEvent.submit(form);
+        // handleSubmit should not be called for whitespace-only input
+        expect(mockHandleSubmit).not.toHaveBeenCalled();
       });
     });
   });
