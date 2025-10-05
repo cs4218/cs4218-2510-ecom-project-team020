@@ -71,7 +71,7 @@ AI Declaration: Unit tests files were generated with AI assistance but ALL test 
 | Header Component                 | `client/src/components/Header.test.js`              | Validates navigation visibility across auth states, category dropdown population, logout behavior, cart badge accuracy, and presence of search and brand elements.          |
 | Footer Component                 | `client/src/components/Footer.test.js`              | Tests all footer navigation links (About, Contact, Policy), link routes, separators, accessibility, and static copyright.                                                   |
 | Layout Component                 | `client/src/components/Layout.test.js`              | Verifies consistent rendering of `Header`, `Footer`, and `Toaster`; ensures proper `<Helmet>` metadata defaults and overrides.                                              |
-| Product Controller (Backend)     | `controllers/productController.test.js`             | Exhaustively tests all CRUD operations and endpoints: search, filter, count, pagination, upload limits, and error handling using **EP/BVA techniques**. 59/59 tests passed. |
+| Product Controller (Backend)     | `controllers/productController.test.js`             | Exhaustively tests all CRUD operations and endpoints: search, filter, count, pagination, upload limits, and error handling using EP/BVA techniques.  |
 | User Model (Backend)             | `models/userModel.test.js`                          | Checks schema paths, required fields, default values, trimming behavior, and data persistence within MongoDB; confirms model integrity under various conditions.            |
 
 
