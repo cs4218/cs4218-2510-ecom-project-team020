@@ -543,4 +543,314 @@ describe("UpdateProduct Component", () => {
       });
     });
   });
+
+  describe("Pairwise Combinatorial Testing - Product Updates", () => {
+    // Test combinations of different field states and scenarios
+    // Parameters: price (min/max), quantity (min/max), category (first/last), shipping (yes/no), photo (new/existing), API response (success/failure)
+
+    it("should handle minimum price + maximum quantity + first category + shipping yes + new photo + API success", async () => {
+      axios.put.mockResolvedValue({ data: { success: true } });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Open category dropdown and select first category
+      const categorySelect = screen.getByTestId("category-select");
+      fireEvent.mouseDown(categorySelect);
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByText("Electronics"));
+
+      // Pairwise: minimum price (0) + maximum quantity (9999) + first category + shipping yes + new photo
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "0" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "9999" }
+      });
+
+      // Set shipping to Yes
+      const shippingSelect = screen.getByTestId("shipping-select");
+      fireEvent.mouseDown(shippingSelect);
+      await waitFor(() => {
+        expect(screen.getByText("Yes")).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByText("Yes"));
+
+      // Upload new photo
+      const fileInput = screen.getByTestId("photo-upload");
+      const file = new File(["test"], "pairwise1.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product updated successfully");
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+      });
+    });
+
+    it("should handle maximum price + minimum quantity + same category + shipping no + existing photo + API success", async () => {
+      axios.put.mockResolvedValue({ data: { success: true } });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: maximum price (999.99) + minimum quantity (0) + same category + shipping yes + existing photo
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "High Price Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "999.99" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "0" }
+      });
+
+      // Keep shipping as Yes (current default setting)
+
+      // Keep existing photo (don't upload new one)
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product updated successfully");
+      });
+    });
+
+    it("should handle medium price + medium quantity + same category + shipping yes + new photo + API failure", async () => {
+      axios.put.mockRejectedValue(new Error("Network error"));
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: medium values + Electronics category + shipping yes + new photo + API failure
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Network Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "49.99" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "50" }
+      });
+
+      // Set shipping to Yes (keep current setting)
+      // Upload new photo
+      const fileInput = screen.getByTestId("photo-upload");
+      const file = new File(["test"], "network-fail.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to update product. Please check your input and try again.");
+      });
+    });
+
+    it("should handle decimal price + large quantity + same category + shipping no + existing photo + API success false", async () => {
+      axios.put.mockResolvedValue({ 
+        data: { success: false, message: "Product name already exists" }
+      });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: decimal price + large quantity + Electronics + shipping yes + existing photo + API success false
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Duplicate Name Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "123.45" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "500" }
+      });
+
+      // Keep shipping as Yes (current default setting)
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Product name already exists");
+      });
+    });
+
+    it("should handle special characters in fields + minimum values + same category + shipping yes + new photo + API success", async () => {
+      axios.put.mockResolvedValue({ data: { success: true } });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: special characters + minimum values + Electronics + shipping yes + new photo
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Product with Special Chars & Symbols @#$%" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "Description with émojis 🚀 and spécial characters!!! Testing unicode characters: αβγδε" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "0.01" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "1" }
+      });
+
+      // Set shipping to Yes (keep current setting)
+      // Upload new photo with special characters in name
+      const fileInput = screen.getByTestId("photo-upload");
+      const file = new File(["test"], "special-chars-étest@#$.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product updated successfully");
+      });
+    });
+
+    it("should handle long text fields + maximum price + medium quantity + same category + shipping no + existing photo + API success", async () => {
+      axios.put.mockResolvedValue({ data: { success: true } });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: very long text fields + maximum price + medium quantity + Electronics + shipping yes + existing photo
+      const longProductName = "A".repeat(255); // Maximum length product name
+      const longDescription = "This is a very long description that tests the maximum character limit for product descriptions. ".repeat(10);
+      
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: longProductName }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: longDescription }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "9999.99" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "100" }
+      });
+
+      // Keep shipping as Yes (current default setting)
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalled();
+        expect(toast.success).toHaveBeenCalledWith("Product updated successfully");
+      });
+    });
+
+    it("should handle empty required fields + validation errors combination", async () => {
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Pairwise: clear required fields + attempt update to test validation
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter product description"), {
+        target: { value: "" }
+      });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Please fill in all required fields");
+      });
+      expect(axios.put).not.toHaveBeenCalled();
+    });
+
+    it("should handle negative values validation + same category + shipping toggle + photo change", async () => {
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: negative price validation + Electronics category + shipping toggle + photo change
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "-50.00" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "25" }
+      });
+
+      // Keep shipping as Yes (current default setting)
+
+      // Upload new photo
+      const fileInput = screen.getByTestId("photo-upload");
+      const file = new File(["test"], "negative-test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Price must be a non-negative number");
+      });
+      expect(axios.put).not.toHaveBeenCalled();
+    });
+
+    it("should handle different file types + valid updates + same category + shipping yes + API timeout", async () => {
+      axios.put.mockImplementation(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error("Request timeout")), 100);
+        });
+      });
+      renderUpdateProduct();
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Test Product")).toBeInTheDocument();
+      });
+
+      // Keep the existing category (Electronics) - no need to change
+      // Pairwise: PNG file type + valid updates + Electronics category + shipping yes + API timeout
+      fireEvent.change(screen.getByPlaceholderText("Enter product name"), {
+        target: { value: "Timeout Test Product" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter price"), {
+        target: { value: "25.50" }
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter quantity"), {
+        target: { value: "75" }
+      });
+
+      // Keep shipping as Yes (current setting)
+      // Upload PNG file
+      const fileInput = screen.getByTestId("photo-upload");
+      const file = new File(["test"], "timeout-test.png", { type: "image/png" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to update product. Please check your input and try again.");
+      });
+    });
+  });
 });
