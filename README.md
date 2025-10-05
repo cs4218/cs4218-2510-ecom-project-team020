@@ -47,6 +47,7 @@ AI Declaration: Unit tests generated with AI assistance but were all curated, va
 | getOrdersController | `controllers/authController.test.js`            | Retrieves all orders placed by the authenticated user.                                                                        |
 | getAllOrdersController     | `controllers/authController.test.js`    | Fetches all orders in the system for administrative review. |
 | orderStatusController         | `controllers/authController.test.js`          | Updates the status of a specific order, validating input and permissions.                                                |
+| orderModel         | `models/orderModel.test.js`          | Defines the schema for orders, enforcing required products, payment, buyer, and status tracking in the database.                                                |
 | authMiddleware            | `middlewares/authMiddleware.test.js`        | Manages and provides authentication state across React components.                             |
 | authHelper           | Integration tests are more appropriate and will be created in Milestone 2.      | Provides utility functions to securely hash passwords and verify user credentials using bcrypt.                          |
 | Order Page            | `client/src/pages/Orders.test.js`        | Displays a user's order history and current orders, allowing status tracking and details view.                             |
