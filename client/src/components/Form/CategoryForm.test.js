@@ -22,6 +22,7 @@ describe("CategoryForm Component", () => {
   };
 
   describe("Component Rendering", () => {
+    // Classification: Output-based (verifies rendered DOM elements)
     it("should render form with all required elements", () => {
       const { container } = renderCategoryForm();
 
@@ -31,6 +32,8 @@ describe("CategoryForm Component", () => {
       expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
     });
 
+    // Classification: Output-based (verifies DOM attributes and CSS classes)
+    // Technique: Boundary Value Analysis (tests minLength=2, maxLength=50)
     it("should render input with correct attributes", () => {
       renderCategoryForm();
 
@@ -43,6 +46,7 @@ describe("CategoryForm Component", () => {
       expect(input).toHaveClass("form-control");
     });
 
+    // Classification: Output-based (verifies input value display), State-based (verifies prop value reflection)
     it("should display the provided value in input", () => {
       const testValue = "Electronics";
       renderCategoryForm(testValue);
@@ -54,6 +58,8 @@ describe("CategoryForm Component", () => {
 
   describe("Form Validation - Boundary Value Analysis", () => {
     describe("Input Length Validation", () => {
+      // Classification: State-based (verifies setValue callback invocation)
+      // Technique: Boundary Value Analysis (minimum valid length = 2)
       it("should accept minimum valid length (2 characters)", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -62,6 +68,8 @@ describe("CategoryForm Component", () => {
         expect(mockSetValue).toHaveBeenCalledWith("TV");
       });
 
+      // Classification: State-based (verifies setValue callback invocation)
+      // Technique: Boundary Value Analysis (maximum valid length = 50)
       it("should accept maximum valid length (50 characters)", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -71,6 +79,8 @@ describe("CategoryForm Component", () => {
         expect(mockSetValue).toHaveBeenCalledWith(maxLengthValue);
       });
 
+      // Classification: State-based (verifies setValue callback invocation)
+      // Technique: Boundary Value Analysis (below minimum length = 1)
       it("should handle input below minimum length (1 character)", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -79,6 +89,8 @@ describe("CategoryForm Component", () => {
         expect(mockSetValue).toHaveBeenCalledWith("A");
       });
 
+      // Classification: Output-based (verifies browser validation state)
+      // Technique: Boundary Value Analysis (empty input = 0 characters)
       it("should invalidate empty input", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -87,6 +99,8 @@ describe("CategoryForm Component", () => {
         expect(input.validity.valueMissing).toBe(true);
       });
 
+      // Classification: State-based (verifies setValue callback invocation)
+      // Technique: Boundary Value Analysis (above maximum length = 51)
       it("should handle input exceeding maximum length", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -99,6 +113,7 @@ describe("CategoryForm Component", () => {
   });
 
   describe("User Interactions", () => {
+    // Classification: State-based (verifies setValue callback invocation)
     it("should call setValue when input changes", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -108,6 +123,7 @@ describe("CategoryForm Component", () => {
       expect(mockSetValue).toHaveBeenCalledWith("Books");
     });
 
+    // Classification: State-based (verifies multiple setValue callback invocations)
     it("should handle multiple input changes", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -122,6 +138,8 @@ describe("CategoryForm Component", () => {
       expect(mockSetValue).toHaveBeenNthCalledWith(3, "Books");
     });
 
+    // Classification: State-based (verifies setValue callback with special characters)
+    // Technique: Equivalence Partitioning (special characters input class)
     it("should handle special characters in input", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -130,6 +148,8 @@ describe("CategoryForm Component", () => {
       expect(mockSetValue).toHaveBeenCalledWith("Books & Media");
     });
 
+    // Classification: State-based (verifies setValue callback with numeric input)
+    // Technique: Equivalence Partitioning (alphanumeric input class)
     it("should handle numeric input", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -140,6 +160,7 @@ describe("CategoryForm Component", () => {
   });
 
   describe("Form Submission", () => {
+    // Classification: Communication-based (verifies handleSubmit callback invocation)
     it("should call handleSubmit when form is submitted", () => {
       const { container } = renderCategoryForm("Electronics");
       const form = container.querySelector("form");
@@ -148,6 +169,7 @@ describe("CategoryForm Component", () => {
       expect(mockHandleSubmit).toHaveBeenCalledTimes(1);
     });
 
+    // Classification: Communication-based (verifies handleSubmit callback via button click)
     it("should call handleSubmit when submit button is clicked", () => {
       renderCategoryForm("Electronics");
       const submitButton = screen.getByRole("button", { name: "Submit" });
@@ -156,6 +178,7 @@ describe("CategoryForm Component", () => {
       expect(mockHandleSubmit).toHaveBeenCalledTimes(1);
     });
 
+    // Classification: Communication-based (verifies handleSubmit callback invocation)
     it("should prevent default form submission", () => {
       const { container } = renderCategoryForm("Electronics");
       const form = container.querySelector("form");
@@ -168,6 +191,8 @@ describe("CategoryForm Component", () => {
 
   describe("Equivalence Partitioning", () => {
     describe("Valid Input Classes", () => {
+      // Classification: State-based (verifies setValue callback with valid alphabetic inputs)
+      // Technique: Equivalence Partitioning (valid alphabetic category names)
       it("should handle valid alphabetic category names", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -180,6 +205,8 @@ describe("CategoryForm Component", () => {
         });
       });
 
+      // Classification: State-based (verifies setValue callback with valid alphanumeric inputs)
+      // Technique: Equivalence Partitioning (valid alphanumeric category names)
       it("should handle valid alphanumeric category names", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -192,6 +219,8 @@ describe("CategoryForm Component", () => {
         });
       });
 
+      // Classification: State-based (verifies setValue callback with special characters)
+      // Technique: Equivalence Partitioning (valid category names with special characters)
       it("should handle valid category names with spaces and special characters", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -206,6 +235,8 @@ describe("CategoryForm Component", () => {
     });
 
     describe("Edge Cases", () => {
+      // Classification: State-based (verifies setValue callback with whitespace input)
+      // Technique: Equivalence Partitioning (edge case - whitespace-only input)
       it("should handle whitespace-only input", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -214,6 +245,8 @@ describe("CategoryForm Component", () => {
         expect(mockSetValue).toHaveBeenCalledWith("   ");
       });
 
+      // Classification: State-based (verifies setValue callback with trimmed input)
+      // Technique: Equivalence Partitioning (edge case - leading/trailing spaces)
       it("should handle input with leading/trailing spaces", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -222,6 +255,8 @@ describe("CategoryForm Component", () => {
         expect(mockSetValue).toHaveBeenCalledWith("  Electronics  ");
       });
 
+      // Classification: State-based (verifies setValue callback with mixed case)
+      // Technique: Equivalence Partitioning (edge case - mixed case input)
       it("should handle mixed case input", () => {
         renderCategoryForm();
         const input = screen.getByPlaceholderText("Enter new category");
@@ -233,6 +268,7 @@ describe("CategoryForm Component", () => {
   });
 
   describe("Accessibility", () => {
+    // Classification: Output-based (verifies DOM attribute for accessibility)
     it("should have input with proper id attribute", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -240,6 +276,7 @@ describe("CategoryForm Component", () => {
       expect(input).toHaveAttribute("id", "categoryInput");
     });
 
+    // Classification: Output-based (verifies keyboard navigation and focus)
     it("should be keyboard accessible", () => {
       renderCategoryForm();
       const input = screen.getByPlaceholderText("Enter new category");
@@ -253,6 +290,7 @@ describe("CategoryForm Component", () => {
       expect(document.activeElement).toBe(submitButton);
     });
 
+    // Classification: Communication-based (verifies form submission via keyboard)
     it("should support form submission via Enter key", () => {
       const { container } = renderCategoryForm("Electronics");
       const form = container.querySelector("form");

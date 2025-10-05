@@ -59,6 +59,7 @@ describe("CreateCategory Component", () => {
   });
 
   describe("Component Initialization", () => {
+    // Classification: Output-based (verifies DOM elements and attributes)
     it("should render with correct layout and title", () => {
       renderCreateCategory();
 
@@ -67,6 +68,7 @@ describe("CreateCategory Component", () => {
       expect(screen.getByText("Manage Category")).toBeInTheDocument();
     });
 
+    // Classification: Communication-based (verifies API call on mount)
     it("should fetch categories on component mount", async () => {
       renderCreateCategory();
 
@@ -75,6 +77,7 @@ describe("CreateCategory Component", () => {
       });
     });
 
+    // Classification: Output-based (verifies rendered data from API response)
     it("should display categories in table", async () => {
       renderCreateCategory();
 
@@ -85,6 +88,7 @@ describe("CreateCategory Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies error handling for API call)
     it("should handle category fetch error", async () => {
       axios.get.mockRejectedValue(new Error("Network error"));
       renderCreateCategory();
@@ -97,6 +101,8 @@ describe("CreateCategory Component", () => {
 
   describe("Category Creation - Equivalence Partitioning", () => {
     describe("Valid Category Creation", () => {
+      // Classification: Communication-based (verifies API call), Output-based (verifies toast message)
+      // Technique: Equivalence Partitioning (valid category name class)
       it("should create category successfully with valid name", async () => {
         renderCreateCategory();
 
@@ -118,6 +124,7 @@ describe("CreateCategory Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies state refresh after creation)
       it("should clear form and refresh categories after successful creation", async () => {
         renderCreateCategory();
 
@@ -136,6 +143,8 @@ describe("CreateCategory Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies API call with special characters)
+      // Technique: Equivalence Partitioning (special characters input class)
       it("should handle category names with special characters", async () => {
         renderCreateCategory();
 
@@ -156,6 +165,8 @@ describe("CreateCategory Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies API call with alphanumeric input)
+      // Technique: Equivalence Partitioning (alphanumeric input class)
       it("should handle category names with numbers", async () => {
         renderCreateCategory();
 
@@ -178,6 +189,8 @@ describe("CreateCategory Component", () => {
     });
 
     describe("Invalid Category Creation", () => {
+      // Classification: Communication-based (verifies no API call made)
+      // Technique: Boundary Value Analysis (empty input = 0 characters)
       it("should prevent submission with empty category name", async () => {
         renderCreateCategory();
 
@@ -193,6 +206,8 @@ describe("CreateCategory Component", () => {
         expect(axios.post).not.toHaveBeenCalled();
       });
 
+      // Classification: Communication-based (verifies no API call made)
+      // Technique: Boundary Value Analysis (below minimum length = 1 character)
       it("should prevent submission with category name too short", async () => {
         renderCreateCategory();
 
@@ -210,6 +225,8 @@ describe("CreateCategory Component", () => {
         expect(axios.post).not.toHaveBeenCalled();
       });
 
+      // Classification: Communication-based (verifies no API call made)
+      // Technique: Boundary Value Analysis (above maximum length = 51 characters)
       it("should prevent submission with category name too long", async () => {
         renderCreateCategory();
 
@@ -229,6 +246,8 @@ describe("CreateCategory Component", () => {
         expect(axios.post).not.toHaveBeenCalled();
       });
 
+      // Classification: Communication-based (verifies error handling for API failure)
+      // Technique: Equivalence Partitioning (API error response class)
       it("should handle API error during creation", async () => {
         axios.post.mockRejectedValue(new Error("Creation failed"));
         renderCreateCategory();
@@ -248,6 +267,8 @@ describe("CreateCategory Component", () => {
         });
       });
 
+      // Classification: Communication-based (verifies handling of unsuccessful API response)
+      // Technique: Equivalence Partitioning (API success: false response class)
       it("should handle API response with success: false", async () => {
         axios.post.mockResolvedValue({
           data: { success: false, message: "Category already exists" }
@@ -272,6 +293,7 @@ describe("CreateCategory Component", () => {
   });
 
   describe("Category Update - Boundary Value Analysis", () => {
+    // Classification: Output-based (verifies modal display), State-based (verifies UI state change)
     it("should open update modal when edit button is clicked", async () => {
       renderCreateCategory();
 
@@ -288,6 +310,7 @@ describe("CreateCategory Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies PUT API call), Output-based (verifies success toast)
     it("should update category successfully", async () => {
       renderCreateCategory();
 
@@ -387,6 +410,8 @@ describe("CreateCategory Component", () => {
   });
 
   describe("Category Deletion", () => {
+    // Classification: Communication-based (verifies DELETE API call), Output-based (verifies success toast)
+    // State-based (verifies categories list refresh)
     it("should delete category successfully", async () => {
       renderCreateCategory();
 
@@ -404,6 +429,7 @@ describe("CreateCategory Component", () => {
       });
     });
 
+    // Classification: Communication-based (verifies error handling for API failure)
     it("should handle deletion error", async () => {
       axios.delete.mockRejectedValue(new Error("Delete failed"));
       renderCreateCategory();
