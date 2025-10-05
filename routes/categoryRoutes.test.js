@@ -40,6 +40,8 @@ app.use("/", router);
 
 describe("categoryRoutes wiring", () => {
   
+  // Classification: Communication-based (verifies middleware execution order), Output-based (verifies route response)
+  // Technique: Equivalence Partitioning (protected route with auth middlewares)
   test("POST /create-category runs auth middlewares then controller", async () => {
     const res = await request(app).post("/create-category").send({ name: "Electronics" });
     expect(res.status).toBe(200);
@@ -47,6 +49,8 @@ describe("categoryRoutes wiring", () => {
     expect(res.body.calls).toEqual(["requireSignIn", "isAdmin"]);
   });
 
+  // Classification: Communication-based (verifies middleware execution order), Output-based (verifies route response)
+  // Technique: Equivalence Partitioning (protected route with auth middlewares)
   test("PUT /update-category/:id runs auth middlewares then controller", async () => {
     const res = await request(app).put("/update-category/123").send({ name: "Updated Electronics" });
     expect(res.status).toBe(200);
@@ -54,6 +58,8 @@ describe("categoryRoutes wiring", () => {
     expect(res.body.calls).toEqual(["requireSignIn", "isAdmin"]);
   });
 
+  // Classification: Communication-based (verifies no middleware execution), Output-based (verifies route response)
+  // Technique: Equivalence Partitioning (public route without auth middlewares)
   test("GET /get-category has no auth middlewares", async () => {
     const res = await request(app).get("/get-category");
     expect(res.status).toBe(200);
@@ -61,6 +67,8 @@ describe("categoryRoutes wiring", () => {
     expect(res.body.calls).toEqual([]);
   });
 
+  // Classification: Communication-based (verifies no middleware execution), Output-based (verifies route response)
+  // Technique: Equivalence Partitioning (public route without auth middlewares)
   test("GET /single-category/:slug has no auth middlewares", async () => {
     const res = await request(app).get("/single-category/foo");
     expect(res.status).toBe(200);
@@ -68,6 +76,8 @@ describe("categoryRoutes wiring", () => {
     expect(res.body.calls).toEqual([]);
   });
 
+  // Classification: Communication-based (verifies middleware execution order), Output-based (verifies route response)
+  // Technique: Equivalence Partitioning (protected route with auth middlewares)
   test("DELETE /delete-category/:id runs auth middlewares then controller", async () => {
     const res = await request(app).delete("/delete-category/123");
     expect(res.status).toBe(200);
