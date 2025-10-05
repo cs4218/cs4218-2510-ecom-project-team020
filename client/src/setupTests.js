@@ -4,5 +4,17 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
 
-// Mock useCategory hook to prevent axios call errors
-jest.mock("./hooks/useCategory", () => jest.fn(() => []));
+// Mock auth context for all tests
+// jest.mock("./context/auth", () => ({
+//   useAuth: jest.fn(() => [null, jest.fn()]),
+// }));
+
+window.matchMedia =
+  window.matchMedia ||
+  function () {
+    return {
+      matches: false,
+      addListener: function () {},
+      removeListener: function () {},
+    };
+  };

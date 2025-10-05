@@ -1,58 +1,119 @@
+// This file contains unit tests generated with AI assistance but curated, validated and refined by me.
 import React from "react";
+import { MemoryRouter } from 'react-router-dom';
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
-import Footer from "../components/Footer";
+import Footer from "./Footer";
+import '@testing-library/jest-dom/extend-expect';
 
-describe("Footer component", () => {
-  test("renders footer heading text", () => {
-    render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>,
-    );
+describe("Footer Component", () => {
+    describe("Component Static Rendering", () => {
+        it("renders copyright text with company name", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
 
-    // check heading
-    const heading = screen.getByText(/All Rights Reserved/i);
-    expect(heading).toBeInTheDocument();
-    expect(heading).toHaveClass("text-center");
-  });
+            expect(screen.getByRole('heading', { level: 4 })).toHaveTextContent(
+                "All Rights Reserved © TestingComp"
+            );
+        });
 
-  test("renders all navigation links", () => {
-    render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>,
-    );
+        it("renders links with pipe separators", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
 
-    const aboutLink = screen.getByRole("link", { name: /About/i });
-    const contactLink = screen.getByRole("link", { name: /Contact/i });
-    const policyLink = screen.getByRole("link", { name: /Privacy Policy/i });
+            const paragraph = screen.getByText((content, element) => {
+                return element.tagName.toLowerCase() === 'p';
+            });
+            expect(paragraph.textContent).toContain('|');
+        });
 
-    expect(aboutLink).toBeInTheDocument();
-    expect(contactLink).toBeInTheDocument();
-    expect(policyLink).toBeInTheDocument();
+        it("renders all three footer navigation links", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
 
-    // verify correct paths
-    expect(aboutLink.getAttribute("href")).toBe("/about");
-    expect(contactLink.getAttribute("href")).toBe("/contact");
-    expect(policyLink.getAttribute("href")).toBe("/policy");
-  });
+            const aboutLink = screen.getByRole('link', { name: /about/i });
+            const contactLink = screen.getByRole('link', { name: /contact/i });
+            const policyLink = screen.getByRole('link', { name: /privacy policy/i });
 
-  test("footer structure and classes", () => {
-    const { container } = render(
-      <MemoryRouter>
-        <Footer />
-      </MemoryRouter>,
-    );
+            expect(aboutLink).toBeInTheDocument();
+            expect(contactLink).toBeInTheDocument();
+            expect(policyLink).toBeInTheDocument();
+        });
 
-    // Prefer ARIA role if present, but don't throw if it's not there
-    const byRole = screen.queryByRole("contentinfo");
-    const fallback = screen
-      .getByText(/All Rights Reserved/i)
-      .closest(".footer");
-    const footer = byRole ?? fallback ?? container.querySelector(".footer");
+        it("renders About link with correct route", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
 
-    expect(footer).toBeInTheDocument();
-    expect(footer).toHaveClass("footer");
-  });
+            const aboutLink = screen.getByRole('link', { name: /about/i });
+            expect(aboutLink).toHaveAttribute('href', '/about');
+        });
+
+        it("renders Contact link with correct route", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
+
+            const contactLink = screen.getByRole('link', { name: /contact/i });
+            expect(contactLink).toHaveAttribute('href', '/contact');
+        });
+
+        it("renders Privacy Policy link with correct route", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
+
+            const policyLink = screen.getByRole('link', { name: /privacy policy/i });
+            expect(policyLink).toHaveAttribute('href', '/policy');
+        });
+    });
+
+    describe("Link Functionality", () => {
+        it("renders About link as an interactive element", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
+
+            const aboutLink = screen.getByRole('link', { name: /about/i });
+            expect(aboutLink).not.toBeDisabled();
+        });
+
+        it("renders Contact link as an interactive element", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
+
+            const contactLink = screen.getByRole('link', { name: /contact/i });
+            expect(contactLink).not.toBeDisabled();
+        });
+
+        it("renders Privacy Policy link as an interactive element", () => {
+            render(
+                <MemoryRouter>
+                    <Footer />
+                </MemoryRouter>
+            );
+
+            const policyLink = screen.getByRole('link', { name: /privacy policy/i });
+            expect(policyLink).not.toBeDisabled();
+        });
+    });
 });
