@@ -1,0 +1,573 @@
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import "@testing-library/jest-dom/extend-expect";
+import CreateCategory from "./CreateCategory";
+
+jest.mock("axios");
+jest.mock("react-hot-toast");
+jest.mock("./../../components/Layout", () => ({ children, title }) => (
+  <div data-testid="layout" title={title}>{children}</div>
+));
+jest.mock("./../../components/AdminMenu", () => () => (
+  <div data-testid="admin-menu">Admin Menu</div>
+));
+jest.mock("../../components/Form/CategoryForm", () => ({ handleSubmit, value, setValue }) => (
+  <form onSubmit={handleSubmit} data-testid="category-form">
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder="Enter category name"
+      data-testid="category-input"
+    />
+    <button type="submit">Submit</button>
+  </form>
+));
+
+const mockCategories = [
+  { _id: "cat1", name: "Electronics" },
+  { _id: "cat2", name: "Books" },
+  { _id: "cat3", name: "Clothing" },
+];
+
+const renderCreateCategory = () => {
+  return render(
+    <MemoryRouter>
+      <CreateCategory />
+    </MemoryRouter>
+  );
+};
+
+describe("CreateCategory Component", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    axios.get.mockResolvedValue({
+      data: { success: true, categories: mockCategories }
+    });
+    axios.post.mockResolvedValue({
+      data: { success: true, message: "Category created successfully" }
+    });
+    axios.put.mockResolvedValue({
+      data: { success: true, message: "Category updated successfully" }
+    });
+    axios.delete.mockResolvedValue({
+      data: { success: true, message: "Category deleted successfully" }
+    });
+  });
+
+  describe("Component Initialization", () => {
+    it("should render with correct layout and title", () => {
+      renderCreateCategory();
+
+      expect(screen.getByTestId("layout")).toHaveAttribute("title", "Dashboard - Create Category");
+      expect(screen.getByTestId("admin-menu")).toBeInTheDocument();
+      expect(screen.getByText("Manage Category")).toBeInTheDocument();
+    });
+
+    it("should fetch categories on component mount", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+      });
+    });
+
+    it("should display categories in table", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+        expect(screen.getByText("Books")).toBeInTheDocument();
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+    });
+
+    it("should handle category fetch error", async () => {
+      axios.get.mockRejectedValue(new Error("Network error"));
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to load categories. Please refresh the page and try again.");
+      });
+    });
+  });
+
+  describe("Category Creation - Equivalence Partitioning", () => {
+    describe("Valid Category Creation", () => {
+      it("should create category successfully with valid name", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "New Category" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+            name: "New Category"
+          });
+          expect(toast.success).toHaveBeenCalledWith('Category "New Category" created successfully');
+        });
+      });
+
+      it("should clear form and refresh categories after successful creation", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "Test Category" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(axios.get).toHaveBeenCalledTimes(2); // Initial load + refresh after creation
+        });
+      });
+
+      it("should handle category names with special characters", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "Arts & Crafts" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+            name: "Arts & Crafts"
+          });
+        });
+      });
+
+      it("should handle category names with numbers", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "Category 123" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(axios.post).toHaveBeenCalledWith("/api/v1/category/create-category", {
+            name: "Category 123"
+          });
+        });
+      });
+    });
+
+    describe("Invalid Category Creation", () => {
+      it("should prevent submission with empty category name", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Try to submit without entering any category name
+        fireEvent.click(submitButton);
+
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it("should prevent submission with category name too short", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Enter a single character (below minLength of 2)
+        fireEvent.change(categoryInput, { target: { value: "A" } });
+        fireEvent.click(submitButton);
+
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it("should prevent submission with category name too long", async () => {
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        // Enter a string longer than maxLength of 50
+        const longCategoryName = "A".repeat(51);
+        fireEvent.change(categoryInput, { target: { value: longCategoryName } });
+        fireEvent.click(submitButton);
+
+        // HTML5 validation should prevent form submission
+        expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it("should handle API error during creation", async () => {
+        axios.post.mockRejectedValue(new Error("Creation failed"));
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "Test Category" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Failed to create category. Please check your input and try again.");
+        });
+      });
+
+      it("should handle API response with success: false", async () => {
+        axios.post.mockResolvedValue({
+          data: { success: false, message: "Category already exists" }
+        });
+        renderCreateCategory();
+
+        await waitFor(() => {
+          expect(screen.getByTestId("category-input")).toBeInTheDocument();
+        });
+
+        const categoryInput = screen.getByTestId("category-input");
+        const submitButton = screen.getByRole("button", { name: "Submit" });
+
+        fireEvent.change(categoryInput, { target: { value: "Duplicate Category" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+          expect(toast.error).toHaveBeenCalledWith("Category already exists");
+        });
+      });
+    });
+  });
+
+  describe("Category Update - Boundary Value Analysis", () => {
+    it("should open update modal when edit button is clicked", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalForm = screen.getAllByTestId("category-form");
+        expect(modalForm).toHaveLength(2); // Main form + modal form
+      });
+    });
+
+    it("should update category successfully", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalInputs = screen.getAllByTestId("category-input");
+        expect(modalInputs).toHaveLength(2);
+      });
+
+      const modalInput = screen.getAllByTestId("category-input")[1]; // Modal input
+      const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+
+      fireEvent.change(modalInput, { target: { value: "Updated Electronics" } });
+      fireEvent.click(modalSubmitButton);
+
+      await waitFor(() => {
+        expect(axios.put).toHaveBeenCalledWith(
+          `/api/v1/category/update-category/${mockCategories[0]._id}`,
+          { name: "Updated Electronics" }
+        );
+        expect(toast.success).toHaveBeenCalledWith('Category "Updated Electronics" updated successfully');
+      });
+    });
+
+    it("should close modal and reset form after successful update", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalInputs = screen.getAllByTestId("category-input");
+        expect(modalInputs).toHaveLength(2);
+      });
+
+      const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+      fireEvent.click(modalSubmitButton);
+
+      await waitFor(() => {
+        expect(axios.get).toHaveBeenCalledTimes(2); // Initial + refresh after update
+      });
+    });
+
+    it("should handle update error", async () => {
+      axios.put.mockRejectedValue(new Error("Update failed"));
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+        fireEvent.click(modalSubmitButton);
+      });
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to update category. Please try again.");
+      });
+    });
+
+    it("should handle API response with success: false for update", async () => {
+      axios.put.mockResolvedValue({
+        data: { success: false, message: "Update not allowed" }
+      });
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalSubmitButton = screen.getAllByRole("button", { name: "Submit" })[1];
+        fireEvent.click(modalSubmitButton);
+      });
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Update not allowed");
+      });
+    });
+  });
+
+  describe("Category Deletion", () => {
+    it("should delete category successfully", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByText("Delete");
+      fireEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(axios.delete).toHaveBeenCalledWith(`/api/v1/category/delete-category/${mockCategories[0]._id}`);
+        expect(toast.success).toHaveBeenCalledWith("Category deleted successfully");
+        expect(axios.get).toHaveBeenCalledTimes(2); // Initial + refresh after deletion
+      });
+    });
+
+    it("should handle deletion error", async () => {
+      axios.delete.mockRejectedValue(new Error("Delete failed"));
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByText("Delete");
+      fireEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to delete category. Please try again.");
+      });
+    });
+
+    it("should handle API response with success: false for deletion", async () => {
+      axios.delete.mockResolvedValue({
+        data: { success: false, message: "Cannot delete category with products" }
+      });
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByText("Delete");
+      fireEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Cannot delete category with products");
+      });
+    });
+  });
+
+  describe("Table Structure and Display", () => {
+    it("should render table with correct headers", async () => {
+      renderCreateCategory();
+
+      expect(screen.getByText("Name")).toBeInTheDocument();
+      expect(screen.getByText("Actions")).toBeInTheDocument();
+    });
+
+    it("should render all categories with edit and delete buttons", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+        expect(screen.getByText("Books")).toBeInTheDocument();
+        expect(screen.getByText("Clothing")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      const deleteButtons = screen.getAllByText("Delete");
+
+      expect(editButtons).toHaveLength(3);
+      expect(deleteButtons).toHaveLength(3);
+    });
+
+    it("should handle empty categories list", async () => {
+      axios.get.mockResolvedValue({
+        data: { success: true, categories: [] }
+      });
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Name")).toBeInTheDocument();
+        expect(screen.getByText("Actions")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText("Electronics")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Form State Management", () => {
+    it("should manage form state correctly during creation", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByTestId("category-input")).toBeInTheDocument();
+      });
+
+      const categoryInput = screen.getByTestId("category-input");
+
+      fireEvent.change(categoryInput, { target: { value: "Test" } });
+      fireEvent.change(categoryInput, { target: { value: "Test Category" } });
+
+      expect(categoryInput.value).toBe("Test Category");
+    });
+
+    it("should populate update form with selected category", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByText("Edit");
+      fireEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const modalInputs = screen.getAllByTestId("category-input");
+        expect(modalInputs[1].value).toBe("Electronics");
+      });
+    });
+  });
+
+  describe("Error Edge Cases", () => {
+    it("should handle malformed category data", async () => {
+      const malformedCategories = [
+        { _id: "cat1", name: null },
+        { _id: "cat2" }, // missing name
+        { name: "No ID" }, // missing _id
+      ];
+
+      axios.get.mockResolvedValue({
+        data: { success: true, categories: malformedCategories }
+      });
+
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Name")).toBeInTheDocument();
+      });
+    });
+
+    it("should handle network timeouts gracefully", async () => {
+      axios.get.mockImplementation(() => 
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Timeout")), 100)
+        )
+      );
+
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Failed to load categories. Please refresh the page and try again.");
+      }, { timeout: 200 });
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have proper table structure for screen readers", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByRole("table")).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "Name" })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "Actions" })).toBeInTheDocument();
+      });
+    });
+
+    it("should have accessible buttons", async () => {
+      renderCreateCategory();
+
+      await waitFor(() => {
+        expect(screen.getByText("Electronics")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByRole("button", { name: "Edit" });
+      const deleteButtons = screen.getAllByRole("button", { name: "Delete" });
+
+      expect(editButtons).toHaveLength(3);
+      expect(deleteButtons).toHaveLength(3);
+    });
+  });
+});

@@ -20,38 +20,41 @@ const UpdateProduct = () => {
   const [photo, setPhoto] = useState("");
   const [id, setId] = useState("");
 
-  //get single product
+  // Fetch single product details from the API
   const getSingleProduct = async () => {
     try {
       const { data } = await axios.get(
         `/api/v1/product/get-product/${params.slug}`
       );
-      setName(data.product.name);
-      setId(data.product._id);
-      setDescription(data.product.description);
-      setPrice(data.product.price);
-      setPrice(data.product.price);
-      setQuantity(data.product.quantity);
-      setShipping(data.product.shipping);
-      setCategory(data.product.category._id);
+      const product = data.product;
+      if (product) {
+        setName(product.name || "");
+        setId(product._id || "");
+        setDescription(product.description || "");
+        setPrice(product.price || "");
+        setQuantity(product.quantity || "");
+        setShipping(!!product.shipping);
+        setCategory(product.category?._id || "");
+      }
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load product details. Please try again.");
     }
   };
   useEffect(() => {
     getSingleProduct();
     //eslint-disable-next-line
   }, []);
-  //get all category
+  // Fetch all categories from the API
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data?.success) {
-        setCategories(data?.category);
+        setCategories(data?.categories);
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      toast.error("Failed to load categories. Please refresh the page and try again.");
     }
   };
 
@@ -59,9 +62,28 @@ const UpdateProduct = () => {
     getAllCategory();
   }, []);
 
-  //create product function
+  // Handle product update form submission
   const handleUpdate = async (e) => {
     e.preventDefault();
+    
+    if (!name || !description || !price || !quantity || !category) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    const priceValue = parseFloat(price);
+    const quantityValue = parseInt(quantity);
+    
+    if (isNaN(priceValue) || priceValue < 0) {
+      toast.error("Price must be a non-negative number");
+      return;
+    }
+    
+    if (isNaN(quantityValue) || quantityValue < 0) {
+      toast.error("Quantity must be a non-negative number");
+      return;
+    }
+    
     try {
       const productData = new FormData();
       productData.append("name", name);
@@ -70,39 +92,40 @@ const UpdateProduct = () => {
       productData.append("quantity", quantity);
       photo && productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.put(
+      productData.append("shipping", shipping);
+      const { data } = await axios.put(
         `/api/v1/product/update-product/${id}`,
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
-        toast.success("Product Updated Successfully");
+        toast.success("Product updated successfully");
         navigate("/dashboard/admin/products");
+      } else {
+        toast.error(data?.message || "Failed to update product");
       }
     } catch (error) {
       console.log(error);
-      toast.error("something went wrong");
+      toast.error("Failed to update product. Please check your input and try again.");
     }
   };
 
-  //delete a product
+  // Handle product deletion
   const handleDelete = async () => {
     try {
-      let answer = window.prompt("Are You Sure want to delete this product ? ");
+      let answer = window.confirm("Are you sure you want to delete this product? This action cannot be undone.");
       if (!answer) return;
       const { data } = await axios.delete(
         `/api/v1/product/delete-product/${id}`
       );
-      toast.success("Product DEleted Succfully");
+      toast.success("Product deleted successfully");
       navigate("/dashboard/admin/products");
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+      toast.error("Failed to delete product. Please try again.");
     }
   };
   return (
-    <Layout title={"Dashboard - Create Product"}>
+    <Layout title={"Dashboard - Update Product"}>
       <div className="container-fluid m-3 p-3">
         <div className="row">
           <div className="col-md-3">
@@ -121,6 +144,7 @@ const UpdateProduct = () => {
                   setCategory(value);
                 }}
                 value={category}
+                data-testid="category-select"
               >
                 {categories?.map((c) => (
                   <Option key={c._id} value={c._id}>
@@ -129,9 +153,11 @@ const UpdateProduct = () => {
                 ))}
               </Select>
               <div className="mb-3">
-                <label className="btn btn-outline-secondary col-md-12">
+                <label className="btn btn-outline-secondary col-md-12" htmlFor="photo-upload">
                   {photo ? photo.name : "Upload Photo"}
                   <input
+                    id="photo-upload"
+                    data-testid="photo-upload"
                     type="file"
                     name="photo"
                     accept="image/*"
@@ -165,18 +191,20 @@ const UpdateProduct = () => {
                 <input
                   type="text"
                   value={name}
-                  placeholder="write a name"
+                  placeholder="Enter product name"
                   className="form-control"
                   onChange={(e) => setName(e.target.value)}
+                  required
                 />
               </div>
               <div className="mb-3">
                 <textarea
-                  type="text"
                   value={description}
-                  placeholder="write a description"
+                  placeholder="Enter product description"
                   className="form-control"
                   onChange={(e) => setDescription(e.target.value)}
+                  required
+                  rows="3"
                 />
               </div>
 
@@ -184,31 +212,37 @@ const UpdateProduct = () => {
                 <input
                   type="number"
                   value={price}
-                  placeholder="write a Price"
+                  placeholder="Enter price"
                   className="form-control"
                   onChange={(e) => setPrice(e.target.value)}
+                  required
+                  min="0"
+                  step="0.01"
                 />
               </div>
               <div className="mb-3">
                 <input
                   type="number"
                   value={quantity}
-                  placeholder="write a quantity"
+                  placeholder="Enter quantity"
                   className="form-control"
                   onChange={(e) => setQuantity(e.target.value)}
+                  required
+                  min="0"
                 />
               </div>
               <div className="mb-3">
                 <Select
                   bordered={false}
-                  placeholder="Select Shipping "
+                  placeholder="Select Shipping"
                   size="large"
                   showSearch
                   className="form-select mb-3"
                   onChange={(value) => {
-                    setShipping(value);
+                    setShipping(value === "1");
                   }}
-                  value={shipping ? "yes" : "No"}
+                  value={shipping ? "1" : "0"}
+                  data-testid="shipping-select"
                 >
                   <Option value="0">No</Option>
                   <Option value="1">Yes</Option>
