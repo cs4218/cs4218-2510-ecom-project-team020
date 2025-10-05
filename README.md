@@ -1,7 +1,9 @@
 # CS4218 Project - Virtual Vault
+
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/17570194597/job/49904621693
 
 # Milestone 1
+
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/17570194597/job/49904621693
 
 ## Workload Distribution
@@ -9,33 +11,90 @@ Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team02
 **Tan Wee Kian, Justin @jyztintan**
 
 AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
-| Domain                 | File                                       | Description                                                                                                                                         |
+| Domain | File | Description |
 | ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Category Model         | `models/categoryModel.test.js`             | Category must have a name; names must be unique; slugs are consistently lower-cased.                                                                |
-| Category Controllers   | `controllers/categoryController.test.js`   | Category APIs return complete, correct data for list and single views; failures surface as proper errors.                                           |
-| `useCategory` Hook     | `client/src/hooks/useCategory.test.js`     | App loads categories on start, shows empty state when none, and stays functional if the API fails.                                                  |
-| Categories Page (UI)   | `client/src/pages/Categories.js`           | Users can see a full, accurate list of available categories.                                                                                        |
-| Category Routes Wiring | `routes/categoryRoutes.test.js`            | Public category endpoints are accessible without login and correctly mapped.                                                                        |
-| Payment Controller     | `controllers/paymentController.test.js`    | Shoppers can obtain a payment token; checkout total is correct; orders are created only on successful payment; failed payments never create orders. |
-| Cart Context           | `client/src/context/cart.test.js`          | Cart state persists across sessions, updates reliably, and safely handles empty/corrupt saved data.                                                 |
-| Cart Page              | `client/src/pages/CartPage.test.js`        | Cart shows the right total, allows item removal, fetches payment token, and completes or aborts checkout appropriately.                             |
-| Policy Page            | `client/src/pages/Policy.test.js`          | Privacy policy content is present and visible to users.                                                                                             |
+| Category Model | `models/categoryModel.test.js` | Category must have a unique name and slug; Slugs are consistently lower-cased. |
+| Category Controllers | `controllers/categoryController.test.js` | Category APIs return complete, correct data for list and single views; failures surface as proper errors. |
+| `useCategory` Hook | `client/src/hooks/useCategory.test.js` | App loads categories on start, shows empty state when none and handles API failure. |
+| Categories Page (UI) | `client/src/pages/Categories.js` | Users can see a accurate list of available categories. |
+| Category Routes Wiring | `routes/categoryRoutes.test.js` | Category endpoints are accessible and correctly mapped. |
+| Payment Controller | `controllers/paymentController.test.js` | Shoppers can obtain a payment token; checkout total is correct; orders are created only on successful payment; failed payments handled gracefully. |
+| Cart Context | `client/src/context/cart.test.js` | Cart state persists across sessions, updates reliably, and safely handles empty/corrupt saved data. |
+| Cart Page | `client/src/pages/CartPage.test.js` | Cart shows the right total, allows item removal, fetches payment token, and completes or aborts checkout appropriately. |
+| Policy Page | `client/src/pages/Policy.test.js` | Privacy policy content is present and visible to users. |
 
 **Gerald Ng Jun Xiang @geraldngjx**
 
 AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
-| Domain                        | File                                            | Description                                                                                                                                         |
+| Domain | File | Description |
 | ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Admin Dashboard               | `client/src/pages/admin/AdminDashboard.test.js` | Admin dashboard displays correct user statistics, navigation elements, and handles authentication states properly.                                   |
-| Admin Menu Component          | `client/src/components/AdminMenu.test.js`      | Admin navigation menu renders all administrative links correctly and maintains proper routing functionality.                                         |
-| Category Form Component       | `client/src/components/Form/CategoryForm.test.js` | Category creation form validates input, handles submissions, and displays appropriate feedback for category management.                              |
-| Create Category Page          | `client/src/pages/admin/CreateCategory.test.js` | Admin can create new categories with proper validation, error handling, and success notifications using pairwise combinatorial and decision tree testing. |
-| Create Product Page           | `client/src/pages/admin/CreateProduct.test.js`  | Admin can create new products with comprehensive field validation, file uploads, and API integration using pairwise combinatorial and decision tree testing. |
-| Update Product Page           | `client/src/pages/admin/UpdateProduct.test.js`  | Admin can update existing products with form pre-population, validation, deletion functionality using pairwise combinatorial testing.               |
-| Category Controller (CUD)     | `controllers/categoryController.test.js`       | Create, Update, Delete category operations work correctly with proper error handling and data validation.                                            |
-| Category Routes (CUD)         | `routes/categoryRoutes.test.js`               | Category create, update, delete endpoints are properly secured, mapped, and handle authentication requirements.                                      |
+| Admin Dashboard | `client/src/pages/admin/AdminDashboard.test.js` | Admin dashboard displays correct user statistics, navigation elements, and handles authentication states properly. |
+| Admin Menu Component | `client/src/components/AdminMenu.test.js` | Admin navigation menu renders all administrative links correctly and maintains proper routing functionality. |
+| Category Form Component | `client/src/components/Form/CategoryForm.test.js` | Category creation form validates input, handles submissions, and displays appropriate feedback for category management. |
+| Create Category Page | `client/src/pages/admin/CreateCategory.test.js` | Admin can create new categories with proper validation, error handling, and success notifications using pairwise combinatorial and decision tree testing. |
+| Create Product Page | `client/src/pages/admin/CreateProduct.test.js` | Admin can create new products with comprehensive field validation, file uploads, and API integration using pairwise combinatorial and decision tree testing. |
+| Update Product Page | `client/src/pages/admin/UpdateProduct.test.js` | Admin can update existing products with form pre-population, validation, deletion functionality using pairwise combinatorial testing. |
+| Category Controller (CUD) | `controllers/categoryController.test.js` | Create, Update, Delete category operations work correctly with proper error handling and data validation. |
+| Category Routes (CUD) | `routes/categoryRoutes.test.js` | Category create, update, delete endpoints are properly secured, mapped, and handle authentication requirements. |
 
-# Project Information 
+**Ritika Manish Joshi @rmj1405**
+
+AI Declaration: Unit tests generated with AI assistance but were all curated, validated and refined by me.
+| Domain | File | Description |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| registerController | `controllers/authController.test.js` | Handles user registration, validating required fields and preventing duplicate accounts. |
+| loginController | `controllers/authController.test.js` | Authenticates users by verifying credentials and issues a JWT token on success. |
+| forgotPasswordController | `controllers/authController.test.js` | Allows users to reset their password after verifying their identity and security answer. |
+| updateProfileController | `controllers/authController.test.js` | Updates user profile details, including password, with validation. |
+| getOrdersController | `controllers/authController.test.js` | Retrieves all orders placed by the authenticated user. |
+| getAllOrdersController | `controllers/authController.test.js` | Fetches all orders in the system for administrative review. |
+| orderStatusController | `controllers/authController.test.js` | Updates the status of a specific order, validating input and permissions. |
+| orderModel | `models/orderModel.test.js` | Defines the schema for orders, enforcing required products, payment, buyer, and status tracking in the database. |
+| authMiddleware | `middlewares/authMiddleware.test.js` | Manages and provides authentication state across React components. |
+| authHelper | Integration tests are more appropriate and will be created in Milestone 2. | Provides utility functions to securely hash passwords and verify user credentials using bcrypt. |
+| Order Page | `client/src/pages/Orders.test.js` | Displays a user's order history and current orders, allowing status tracking and details view. |
+| Profile Page | `client/src/pages/Profile.test.js` | Shows and allows editing of user profile information, including contact and password updates. |
+| Register Page | `client/src/pages/Register.test.js` | Provides a registration form for new users with validation and error handling. |
+| Home Page | `client/src/pages/Homepage.test.js` | Renders the main landing page with featured products, categories, and other content.
+| Dashboard Page | `client/src/pages/Dashboard.test.js` | Displays user information and links to user's orders and profile update form. |
+| Footer | `client/src/pages/Footer.test.js` | Shows site-wide footer with navigation links, contact info, and policy references. |
+| AuthProvider | `client/src/context/auth.test.js` | Manages and provides authentication state across React components. |
+
+**Alicia Yap @wapisai**
+
+AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
+
+| Domain                       | File                                                | Description                                                                                                                                                               |
+| ---------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin Orders Page            | `client/src/pages/admin/AdminOrders.test.js`        | Verifies order fetching, status updates, payment outcomes, and graceful handling of API failures, empty data, and missing fields. Achieved 100% branch and line coverage. |
+| Products Page                | `client/src/pages/admin/Products.test.js`           | Ensures product list renders in correct order, handles null/undefined entries safely, preserves slug formatting, validates layout, and handles API errors with stable UI. |
+| Users Page (Admin)           | `client/src/pages/admin/Users.test.js`              | Confirms correct layout with `Layout` and `AdminMenu`, validates heading and structure, prevents redundant renders, and ensures accessibility focus behavior.             |
+| User Menu Component          | `client/src/components/UserMenu.test.js`            | Tests navigation structure, active state management by route, keyboard accessibility, and link correctness; covers boundary and structural validation cases.              |
+| Private Route                | `client/src/components/Routes/PrivateRoute.test.js` | Simulates multiple auth states: missing, valid, and invalid tokens. Validates redirect flow, API handling, cleanup after unmount, and race-condition branches.            |
+| Header Component             | `client/src/components/Header.test.js`              | Validates navigation visibility across auth states, category dropdown population, logout behavior, cart badge accuracy, and presence of search and brand elements.        |
+| Footer Component             | `client/src/components/Footer.test.js`              | Tests all footer navigation links (About, Contact, Policy), link routes, separators, accessibility, and static copyright.                                                 |
+| Layout Component             | `client/src/components/Layout.test.js`              | Verifies consistent rendering of `Header`, `Footer`, and `Toaster`; ensures proper `<Helmet>` metadata defaults and overrides.                                            |
+| Product Controller (Backend) | `controllers/productController.test.js`             | Exhaustively tests all CRUD operations and endpoints: search, filter, count, pagination, upload limits, and error handling using EP/BVA techniques.                       |
+| User Model (Backend)         | `models/userModel.test.js`                          | Checks schema paths, required fields, default values, trimming behavior, and data persistence within MongoDB; confirms model integrity under various conditions.          |
+
+**Yip Sin Hang @simbayippy**
+
+AI Declaration: Unit tests files were generated with AI assistance but ALL test cases are refined and validated.
+
+| Domain                        | File                                       | Description                                                                                                                                                                |
+| ----------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product Details Page          | `client/src/pages/ProductDetails.test.js`  | Tests product data loading, API integration, related products display, add-to-cart functionality, navigation, and error handling with comprehensive edge case coverage.    |
+| Category Product Page         | `client/src/pages/CategoryProduct.test.js` | Validates category-based product filtering, pagination, product card rendering, description truncation, and API error handling with various data scenarios.                |
+| Search Context                | `client/src/context/search.test.js`        | Ensures search state management, context provider functionality, state persistence, edge case handling, and performance with large datasets using comprehensive testing.   |
+| Search Results Page           | `client/src/pages/Search.test.js`          | Verifies search results display, product count accuracy, description truncation, missing data handling, and context integration with various search scenarios.             |
+| About Page                    | `client/src/pages/About.test.js`           | Tests page structure, content hierarchy, layout integration, and accessibility features. Fixed broken About.js component with missing content and proper semantic HTML.    |
+| Spinner Component             | `client/src/components/Spinner.test.js`    | Validates countdown timer functionality, navigation integration, path parameter handling, and equivalence partitioning for valid/invalid inputs with precise timing tests. |
+| Page Not Found                | `client/src/pages/PageNotFound.test.js`    | Tests 404 error page rendering, navigation links, layout integration, and React Router compatibility with proper error state handling.                                     |
+| Contact Page                  | `client/src/pages/Contact.test.js`         | Verifies contact information display, icon integration, layout structure, accessibility compliance, and static content validation with comprehensive UI testing.           |
+| Product Controller (Backend)  | `controllers/productController.test.js`    | Comprehensive testing of all product CRUD operations, search functionality, filtering, pagination, file uploads, and error handling using EP/BVA and boundary testing.     |
+| Database Connection (Backend) | `config/db.test.js`                        | Tests MongoDB connection establishment, error handling, environment configuration, timeout scenarios, and connection state management with various network conditions.     |
+
+# Project Information
 
 ## 1. Project Introduction
 
