@@ -125,7 +125,7 @@ const HomePage = () => {
             {categories?.map((c) => (
               <Checkbox
                 key={c._id}
-                onChange={(c) => handleFilter(c.target.checked, c._id)}
+                onChange={(e) => handleFilter(e.target.checked, c._id)}
               >
                 {c.name}
               </Checkbox>
