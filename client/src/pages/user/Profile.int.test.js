@@ -1,172 +1,246 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { http } from 'msw';
-import { setupServer } from 'msw/node';
 import toast from 'react-hot-toast';
 import Profile from '../../pages/user/Profile';
-import { AuthContext } from '../../context/auth';
+import { useAuth } from '../../context/auth';
+import axios from "axios";
 
-// Mock toast to isolate UI
 jest.mock('react-hot-toast', () => ({
-  success: jest.fn(),
-  error: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
+}));
+
+jest.mock("axios", () => ({
+    post: jest.fn(),
+    put: jest.fn(),
+    get: jest.fn(),
 }));
 
 jest.mock('../../context/auth', () => ({
-  useAuth: jest.fn(() => [null, jest.fn()])
+    useAuth: jest.fn(() => [null, jest.fn()])
 }));
 
 jest.mock('../../context/cart', () => ({
-  useCart: jest.fn(() => [null, jest.fn()])
+    useCart: jest.fn(() => [null, jest.fn()])
 }));
 
 jest.mock('../../context/search', () => ({
-  useSearch: jest.fn(() => [{ keyword: '' }, jest.fn()])
+    useSearch: jest.fn(() => [{ keyword: '' }, jest.fn()])
 }));
 
 jest.mock('../../components/Header', () => {
-  return function MockedHeader() {
-    return <div data-testid="mocked-header">Header</div>;
-  };
+    return function MockedHeader() {
+        return <div data-testid="mocked-header">Header</div>;
+    };
 });
 
-// Mock UserMenu and Layout (non-critical UI)
 jest.mock('../../components/UserMenu', () => () => <div>UserMenuMock</div>);
 jest.mock('../../components/Layout', () => ({ children }) => <div>{children}</div>);
 
-const server = setupServer(
-  // ✅ Successful update
-  rest.put('/api/v1/auth/profile', async (req, res, ctx) => {
-    const body = await req.json();
-    if (body.name === 'Error User') {
-      return res(ctx.status(400), ctx.json({ error: 'Invalid update request' }));
-    }
-    return res(
-      ctx.status(200),
-      ctx.json({
-        updatedUser: {
-          ...body,
-          _id: '123',
-          email: 'test@example.com',
+describe("Profile Component Integration Tests", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    const mockSetAuth = jest.fn();
+
+    const mockAuth = {
+        token: "abc123",
+        user: {
+            name: "Jane",
+            email: "jane@example.com",
+            phone: "98765432",
+            address: "Old Address",
         },
-      })
-    );
-  })
-);
+    };
 
-beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  jest.clearAllMocks();
-});
-afterAll(() => server.close());
+    const setup = () => {
+        useAuth.mockReturnValue([mockAuth, mockSetAuth]);
+        localStorage.setItem("auth", JSON.stringify(mockAuth));
 
-// Mock localStorage
-beforeEach(() => {
-  Storage.prototype.getItem = jest.fn(() =>
-    JSON.stringify({ token: 'mock-token', user: { name: 'John', email: 'test@example.com', phone: '98765432', address: 'Old St' } })
-  );
-  Storage.prototype.setItem = jest.fn();
-});
+        render(<Profile />);
+    };
 
-const renderWithAuth = (authUser) => {
-  const mockSetAuth = jest.fn();
-  render(
-    <AuthContext.Provider value={[{ user: authUser }, mockSetAuth]}>
-      <MemoryRouter>
-        <Profile />
-      </MemoryRouter>
-    </AuthContext.Provider>
-  );
-  return { mockSetAuth };
-};
-
-describe('Profile Integration Tests (MSW)', () => {
-
-  it('loads and populates initial user info', async () => {
-    renderWithAuth({
-      name: 'John',
-      email: 'test@example.com',
-      phone: '98765432',
-      address: 'Old St',
+    afterEach(() => {
+        jest.clearAllMocks();
+        localStorage.clear();
     });
 
-    expect(screen.getByDisplayValue('John')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('98765432')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Old St')).toBeInTheDocument();
-  });
+    it("loads and displays user info from auth context", async () => {
+        setup();
 
-  it('updates profile successfully (integration with backend + toast + localStorage)', async () => {
-    const { mockSetAuth } = renderWithAuth({
-      name: 'John',
-      email: 'test@example.com',
-      phone: '98765432',
-      address: 'Old St',
+        expect(screen.getByDisplayValue("Jane")).toBeInTheDocument();
+        expect(screen.getByDisplayValue("jane@example.com")).toBeInTheDocument();
+        expect(screen.getByDisplayValue("98765432")).toBeInTheDocument();
+        expect(screen.getByDisplayValue("Old Address")).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Jane Doe' } });
-    fireEvent.change(screen.getByLabelText(/address/i), { target: { value: 'New Road' } });
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
+    it("updates profile successfully and updates localStorage + context", async () => {
+        setup();
 
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Profile Updated Successfully'));
-    expect(mockSetAuth).toHaveBeenCalled();
-    expect(localStorage.setItem).toHaveBeenCalled();
-  });
+        const updatedUser = {
+            name: "Jane",
+            email: "jane@example.com",
+            phone: "91234567",
+            address: "New Address",
+        };
 
-  it('handles backend validation error gracefully', async () => {
-    renderWithAuth({
-      name: 'John',
-      email: 'test@example.com',
-      phone: '98765432',
-      address: 'Old St',
+        axios.put.mockResolvedValueOnce({ data: { updatedUser } });
+
+        fireEvent.change(screen.getByLabelText(/name/i), { target: { value: "Jane" } });
+        fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "91234567" } });
+        fireEvent.change(screen.getByLabelText(/address/i), { target: { value: "New Address" } });
+
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/profile", {
+                name: "Jane",
+                email: "jane@example.com",
+                password: "",
+                phone: "91234567",
+                address: "New Address",
+            });
+        });
+
+        expect(toast.success).toHaveBeenCalledWith("Profile Updated Successfully");
+        expect(mockSetAuth).toHaveBeenCalledWith(expect.objectContaining({
+            user: updatedUser,
+        }));
+
+        const saved = JSON.parse(localStorage.getItem("auth"));
+        expect(saved.user).toEqual(updatedUser);
     });
 
-    // Trigger MSW error handler
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Error User' } });
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
+    it("accepts boundary 15-digit phone as valid", async () => {
+        setup();
 
-    await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Invalid update request')
-    );
-  });
+        const boundaryPhone = "123456789012345";
 
-  it('shows form validation error and prevents submission', async () => {
-    renderWithAuth({
-      name: 'John',
-      email: 'test@example.com',
-      phone: '98765432',
-      address: 'Old St',
+        axios.put.mockResolvedValueOnce({
+            data: { updatedUser: { ...mockAuth.user, name: "Jane" } },
+        });
+
+        fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: boundaryPhone } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/profile", {
+                name: "Jane",
+                email: "jane@example.com",
+                password: "",
+                phone: boundaryPhone,
+                address: "Old Address",
+            });
+        });
+
+        expect(toast.success).toHaveBeenCalledWith("Profile Updated Successfully");
     });
 
-    // Invalid phone and password
-    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: 'abc' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'weak' } });
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
+    it("accepts boundary 8-digit phone as valid", async () => {
+        setup();
 
-    await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('Please fix the errors before submitting')
-    );
-    expect(screen.getByText(/must be at least 8 characters/i)).toBeInTheDocument();
-    expect(screen.getByText(/8–15 digits only/i)).toBeInTheDocument();
-  });
+        const boundaryPhone = "12345678";
 
-  it('handles unexpected network/server failure', async () => {
-    server.use(
-      rest.put('/api/v1/auth/profile', (req, res, ctx) =>
-        res.networkError('Failed to connect')
-      )
-    );
+        axios.put.mockResolvedValueOnce({
+            data: { updatedUser: { ...mockAuth.user, name: "Jane" } },
+        });
 
-    renderWithAuth({
-      name: 'John',
-      email: 'test@example.com',
-      phone: '98765432',
-      address: 'Old St',
+        fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: boundaryPhone } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(axios.put).toHaveBeenCalledWith("/api/v1/auth/profile", {
+                name: "Jane",
+                email: "jane@example.com",
+                password: "",
+                phone: boundaryPhone,
+                address: "Old Address",
+            });
+        });
+
+        expect(toast.success).toHaveBeenCalledWith("Profile Updated Successfully");
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /update/i }));
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Something went wrong'));
-  });
+    it("shows toast error when server responds with an error", async () => {
+        setup();
+        axios.put.mockResolvedValueOnce({ data: { error: "Email already taken" } });
+
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(toast.error).toHaveBeenCalledWith("Email already taken");
+        });
+    });
+
+    it("shows toast error when request fails", async () => {
+        setup();
+        axios.put.mockRejectedValueOnce(new Error("Network error"));
+        
+        const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+        });
+        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+        
+        consoleSpy.mockRestore();
+    });
+
+    it("blocks submission and shows validation error for weak password", async () => {
+        setup();
+
+        fireEvent.change(screen.getByLabelText(/password/i), { target: { value: "weakpass" } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(toast.error).toHaveBeenCalledWith("Please fix the errors before submitting");
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText(/must be at least 8 characters/i)).toBeInTheDocument();
+        });
+
+
+        expect(axios.put).not.toHaveBeenCalled();
+    });
+
+    it("blocks submission and shows validation error for invalid phone", async () => {
+        setup();
+
+        fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "abcd" } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(screen.getByText(/phone number must be 8–15 digits only/i)).toBeInTheDocument();
+        });
+
+        await waitFor(() => {
+            expect(toast.error).toHaveBeenCalledWith("Please fix the errors before submitting");
+        });
+
+        expect(axios.put).not.toHaveBeenCalled();
+    });
+
+    it("clears validation errors when corrected and submits successfully", async () => {
+        setup();
+
+        fireEvent.change(screen.getByLabelText(/password/i), { target: { value: "weakpass" } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(screen.getByText(/must be at least 8 characters/i)).toBeInTheDocument();
+        });
+
+        fireEvent.change(screen.getByLabelText(/password/i), { target: { value: "Password123!" } });
+
+        axios.put.mockResolvedValueOnce({ data: { updatedUser: { ...mockAuth.user, name: "Updated Jane" } } });
+        fireEvent.click(screen.getByText(/update/i));
+
+        await waitFor(() => {
+            expect(toast.success).toHaveBeenCalledWith("Profile Updated Successfully");
+        });
+    });
 });
