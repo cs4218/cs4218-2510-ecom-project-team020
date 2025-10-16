@@ -13,6 +13,12 @@ module.exports = {
     "<rootDir>/routes/*.test.js",
     "<rootDir>/models/*.test.js",
     "<rootDir>/config/*.test.js",
+    "<rootDir>/controllers/*.int.test.js",
+    "<rootDir>/middlewares/*.int.test.js",
+    "<rootDir>/helpers/*.int.test.js",
+    "<rootDir>/routes/*.int.test.js",
+    "<rootDir>/models/*.int.test.js",
+    "<rootDir>/config/*.int.test.js",
   ],
 
   // jest code coverage
