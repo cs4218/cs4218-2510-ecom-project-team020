@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('AdminDashboard UI Integration Tests', () => {
   
   test.beforeEach(async ({ page }) => {
+    // Set longer timeout for these tests
+    page.setDefaultTimeout(30000);
+    
     // Navigate directly to admin dashboard
     await page.goto('/dashboard/admin');
     await page.waitForLoadState('networkidle');
@@ -61,7 +64,6 @@ test.describe('AdminDashboard UI Integration Tests', () => {
     // Look for dashboard-specific interactive elements
     const refreshButton = page.locator('button:has-text("Refresh"), [data-testid*="refresh"]');
     const filterElements = page.locator('select, input[type="search"], .filter');
-    const actionButtons = page.locator('button:not(:has-text("Create")):not(:has-text("Products"))');
     
     // Test interactions if elements exist
     if (await refreshButton.count() > 0) {

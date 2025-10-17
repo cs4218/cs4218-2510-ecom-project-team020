@@ -5,7 +5,8 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './tests/ui',
+  testDir: './',
+  testMatch: ['**/tests/**/*.spec.js', '**/*.integration.playwright.js', '**/e2e/**/*.spec.js'],
   /* Maximum time one test can run for. */
   timeout: 60 * 1000,
   expect: {
