@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './',
+  testMatch: ['e2e/**/*.spec.ts', 'client/src/**/*.spec.js'],
   timeout: 30_000,
   captureGitInfo: { commit: true, diff: true },
   expect: { timeout: 5_000 },
