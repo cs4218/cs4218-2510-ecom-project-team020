@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import toast from 'react-hot-toast';
-import Profile from '../../pages/user/Profile';
+import Profile from './Profile';
 import { useAuth } from '../../context/auth';
 import axios from "axios";
 
