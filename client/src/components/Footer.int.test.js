@@ -18,7 +18,6 @@ describe("Footer Integration Tests", () => {
             </MemoryRouter>
         );
 
-        // Find links by textContent
         const links = screen.getAllByRole("link");
         const aboutLink = links.find(link => link.textContent === "About");
         const contactLink = links.find(link => link.textContent === "Contact");
@@ -28,7 +27,6 @@ describe("Footer Integration Tests", () => {
         expect(contactLink).toBeInTheDocument();
         expect(policyLink).toBeInTheDocument();
 
-        // Click links and verify navigation
         await userEvent.click(aboutLink);
         await waitFor(() => {
             expect(screen.getByText("About Page")).toBeInTheDocument();

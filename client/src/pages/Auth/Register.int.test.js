@@ -68,7 +68,6 @@ describe("Register Component Integration", () => {
     fillForm();
     fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
-    // Wait for axios call and toast
     await waitFor(() => {
       expect(axios.post).toHaveBeenCalledWith("/api/v1/auth/register", {
         name: "John Doe",
