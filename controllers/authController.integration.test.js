@@ -10,7 +10,7 @@ import {
     loginController,
     forgotPasswordController,
     updateProfileController
-} from "../controllers/authController.js";
+} from "./authController.js";
 import { hashPassword } from "../helpers/authHelper.js";
 import userModel from "../models/userModel.js";
 import authRoutes from "../routes/authRoute.js";
