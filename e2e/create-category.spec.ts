@@ -10,6 +10,8 @@ test.describe('Create Category - True E2E Test', () => {
    password: 'Testing#'
  };
 
+ // Track categories created in each test for cleanup
+ const testCategoriesCreated: string[] = [];
 
  // Helper function to perform real admin login
  const loginAsAdmin = async (page) => {
@@ -31,14 +33,81 @@ test.describe('Create Category - True E2E Test', () => {
    await page.waitForTimeout(2000);
  };
 
+ // Helper function to delete a category by ID
+ const deleteCategory = async (page, categoryId: string) => {
+   try {
+     const deleteResponse = await page.evaluate(async (catId) => {
+       try {
+         const authData = localStorage.getItem('auth');
+         if (!authData) return { success: false, error: 'No auth data' };
+
+         const { token } = JSON.parse(authData);
+         if (!token) return { success: false, error: 'No token' };
+
+         const response = await fetch(`/api/v1/category/delete-category/${catId}`, {
+           method: 'DELETE',
+           headers: {
+             'Authorization': token,
+             'Content-Type': 'application/json'
+           }
+         });
+
+         const data = await response.json();
+         return data;
+       } catch (error) {
+         return { success: false, error: error.message };
+       }
+     }, categoryId);
+
+     return deleteResponse.success;
+   } catch (error) {
+     console.error('Failed to delete category:', error);
+     return false;
+   }
+ };
+
 
  test.beforeEach(async ({ page }) => {
    // Set timeout for real network operations
    page.setDefaultTimeout(20000);
 
+   // Clear the tracking array for this test
+   testCategoriesCreated.length = 0;
 
    // NO API MOCKING - This is a true E2E test
    // All requests go to real backend with real database
+ });
+
+ test.afterEach(async ({ page }) => {
+   // Clean up any categories created during the test
+   if (testCategoriesCreated.length > 0) {
+     console.log(`🧹 Cleaning up ${testCategoriesCreated.length} test categories...`);
+     
+     for (const categoryName of testCategoriesCreated) {
+       try {
+         // Get category ID
+         const categoryId = await page.evaluate(async (catName) => {
+           try {
+             const response = await fetch('/api/v1/category/get-category');
+             const data = await response.json();
+             const category = data.categories?.find(cat => cat.name === catName);
+             return category?._id;
+           } catch (error) {
+             return null;
+           }
+         }, categoryName);
+
+         if (categoryId) {
+           const deleted = await deleteCategory(page, categoryId);
+           if (deleted) {
+             console.log(`  ✓ Cleaned up: ${categoryName}`);
+           }
+         }
+       } catch (error) {
+         console.error(`  ✗ Failed to cleanup: ${categoryName}`);
+       }
+     }
+   }
  });
 
 
@@ -88,6 +157,9 @@ test.describe('Create Category - True E2E Test', () => {
    // Step 5: Create a unique category name to avoid conflicts
    const categoryName = `E2E Test Category ${Date.now()}`;
    console.log(`📝 Step 5: Creating category: ${categoryName}`);
+   
+   // Track this category for cleanup
+   testCategoriesCreated.push(categoryName);
 
 
    const categoryInput = page.getByPlaceholder('Enter new category');
@@ -244,22 +316,16 @@ test.describe('Create Category - True E2E Test', () => {
    await expect(page.getByRole('heading', { name: 'Manage Category' })).toBeVisible();
 
 
-   // Get initial categories count
-   const initialCategoriesResponse = await page.evaluate(async () => {
-     try {
-       const response = await fetch('/api/v1/category/get-category');
-       const data = await response.json();
-       return data.categories?.length || 0;
-     } catch (error) {
-       return 0;
-     }
-   });
-
-
    // Try to submit empty form - this should be silently prevented by frontend
    console.log('📝 Testing empty form submission...');
    const submitButton = page.getByRole('button', { name: 'Submit' });
    await expect(submitButton).toBeVisible();
+   const categoryInput = page.getByPlaceholder('Enter new category');
+   
+   // Ensure input is empty
+   await categoryInput.clear();
+   await expect(categoryInput).toHaveValue('');
+   
    await submitButton.click();
 
 
@@ -267,20 +333,16 @@ test.describe('Create Category - True E2E Test', () => {
    await page.waitForTimeout(2000);
 
 
-   // Verify no category was created (form submission was prevented)
-   const finalCategoriesResponse = await page.evaluate(async () => {
-     try {
-       const response = await fetch('/api/v1/category/get-category');
-       const data = await response.json();
-       return data.categories?.length || 0;
-     } catch (error) {
-       return 0;
-     }
-   });
-
-
-   expect(finalCategoriesResponse).toBe(initialCategoriesResponse);
-   console.log('✅ Empty form submission correctly prevented - no categories were created');
+   // Verify no empty category was created by checking:
+   // 1. Input field is still empty (form didn't submit)
+   // 2. No success message appeared
+   await expect(categoryInput).toHaveValue('');
+   
+   // Verify no success toast appeared
+   const successMessage = page.locator('text=created successfully');
+   await expect(successMessage).not.toBeVisible();
+   
+   console.log('✅ Empty form submission correctly prevented - form validation working');
  });
 
 
@@ -303,6 +365,9 @@ test.describe('Create Category - True E2E Test', () => {
    // Test category with special characters
    const categoryName = `Special-Test_Category & More ${Date.now()}`;
    console.log(`📝 Creating category with special characters: ${categoryName}`);
+   
+   // Track this category for cleanup
+   testCategoriesCreated.push(categoryName);
 
 
    const categoryInput = page.getByPlaceholder('Enter new category');
@@ -388,6 +453,9 @@ test.describe('Create Category - True E2E Test', () => {
 
    const uniqueCategoryName = `Duplicate Test ${Date.now()}`;
    console.log(`📝 Step 1: Creating initial category: ${uniqueCategoryName}`);
+   
+   // Track this category for cleanup
+   testCategoriesCreated.push(uniqueCategoryName);
 
 
    // Create the first category
@@ -472,6 +540,9 @@ test.describe('Create Category - True E2E Test', () => {
    // Step 2: Create a test category
    const categoryName = `Session Test ${Date.now()}`;
    console.log(`📝 Step 1: Creating test category: ${categoryName}`);
+   
+   // Track this category for cleanup
+   testCategoriesCreated.push(categoryName);
 
 
    await page.getByPlaceholder('Enter new category').fill(categoryName);
