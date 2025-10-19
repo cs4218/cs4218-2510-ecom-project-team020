@@ -52,3 +52,5 @@ Thumbs.db
 # Documentation (custom)
 /.md/
 /.cursor/
+
+/integration_test_docs/
