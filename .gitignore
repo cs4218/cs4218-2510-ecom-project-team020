@@ -54,3 +54,5 @@ Thumbs.db
 /.cursor/
 
 /integration_test_docs/
+
+/e2e_test_docs/
