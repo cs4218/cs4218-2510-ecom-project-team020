@@ -10,10 +10,8 @@ test.describe('Create Category - True E2E Test', () => {
    password: 'Testing#'
  };
 
- // Track categories created in each test for cleanup
- const testCategoriesCreated: string[] = [];
-
- // Helper function to perform real admin login
+  // Track categories created in each test for cleanup
+  const testCategoriesCreated = []; // Helper function to perform real admin login
  const loginAsAdmin = async (page) => {
    await page.goto('/login');
    await page.waitForLoadState('domcontentloaded');
@@ -34,7 +32,7 @@ test.describe('Create Category - True E2E Test', () => {
  };
 
  // Helper function to delete a category by ID
- const deleteCategory = async (page, categoryId: string) => {
+ const deleteCategory = async (page, categoryId) => {
    try {
      const deleteResponse = await page.evaluate(async (catId) => {
        try {
