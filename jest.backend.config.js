@@ -19,6 +19,7 @@ module.exports = {
 
   // jest code coverage
   collectCoverage: true,
+  coverageDirectory: "<rootDir>/coverage/backend",
   collectCoverageFrom: [
     "<rootDir>/controllers/**",
     "<rootDir>/helpers/**",

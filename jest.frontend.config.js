@@ -35,6 +35,7 @@ module.exports = {
 
   // jest code coverage
   collectCoverage: true,
+  coverageDirectory: "<rootDir>/coverage/frontend",
   collectCoverageFrom: [
     "client/src/pages/**/*.js",
     "client/src/hooks/**/*.js",

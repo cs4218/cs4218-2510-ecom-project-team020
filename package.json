@@ -11,11 +11,12 @@
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "jest --config jest.backend.config.js",
     "test:frontend": "jest --config jest.frontend.config.js",
+    "test:coverage": "jest --config jest.config.js --coverage",
     "test:all": "npm run test && npm run test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
-    "sonarqube": "sonarqube-scanner"
+    "sonarqube": "npm run test:coverage && sonarqube-scanner"
   },
   "keywords": [],
   "author": "RP",
