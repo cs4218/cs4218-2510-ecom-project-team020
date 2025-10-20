@@ -16,6 +16,10 @@ node_modules/
 /coverage/
 coverage/
 
+# Ignore Playwright artifacts
+playwright-report/
+test-results/
+playwright/.cache/
 
 # Build outputs
 /dist/
