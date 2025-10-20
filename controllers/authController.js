@@ -78,7 +78,7 @@ export const loginController = async (req, res) => {
     if (!user) {
       return res.status(404).send({
         success: false,
-        message: "Email is not registerd",
+        message: "Email is not registered",
       });
     }
     const match = await comparePassword(password, user.password);
@@ -121,13 +121,13 @@ export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
     if (!email) {
-      res.status(400).send({ message: "Email is Required" });
+      return res.status(400).send({ message: "Email is Required" });
     }
     if (!answer) {
-      res.status(400).send({ message: "Answer is Required" });
+      return res.status(400).send({ message: "Answer is Required" });
     }
     if (!newPassword) {
-      res.status(400).send({ message: "New Password is Required" });
+      return res.status(400).send({ message: "New Password is Required" });
     }
 
     if (newPassword.length < 6) {
@@ -228,7 +228,7 @@ export const getAllOrdersController = async (req, res) => {
       .find({})
       .populate("products", "-photo")
       .populate("buyer", "name")
-      .sort({ createdAt: "-1" });
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
     console.log(error);
