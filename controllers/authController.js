@@ -296,3 +296,15 @@ export const orderStatusController = async (req, res) => {
     });
   }
 };
+
+export const getAllUsersController = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({})
+      .select("-password -resetPasswordToken -resetPasswordExpire"); // hide sensitive fields
+    res.status(200).send({ success: true, users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ success: false, message: "Error fetching users" });
+  }
+};
