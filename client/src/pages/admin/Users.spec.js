@@ -1,4 +1,3 @@
-// client/src/pages/admin/Users.spec.js
 import { test, expect } from "@playwright/test";
 
 const BASE = process.env.APP_URL || "http://localhost:3000";
@@ -6,10 +5,8 @@ const USERS_API = "**/api/v1/auth/all-users";
 const ADMIN_AUTH_API = "**/api/v1/auth/admin-auth";
 const CATEGORY_API = "**/api/v1/category/get-category";
 
-// Make getByTestId('x') map to [data-test="x"]
 test.use({ testIdAttribute: "data-test" });
 
-// --- helpers ---------------------------------------------------------------
 async function bootstrapAdminAuth(page) {
   await page.addInitScript(() => {
     const auth = {
@@ -22,14 +19,10 @@ async function bootstrapAdminAuth(page) {
 }
 
 async function stubShellApis(page) {
-  // Admin route guard ping
   await page.route(ADMIN_AUTH_API, r => r.fulfill({ json: { ok: true } }));
-  // Layout/menu might fetch categories; safe to stub empty
   await page.route(CATEGORY_API, r => r.fulfill({ json: { success: true, category: [] } }));
-  // Let other requests pass through unless overridden in each test
 }
 
-// --- fixtures --------------------------------------------------------------
 const demoUsers = [
   { _id: "u1", name: "Daniel", email: "Daniel@gmail.com" },
   { _id: "u2", name: "Test 3", email: "hello@test.com" },
@@ -39,7 +32,6 @@ const demoUsers = [
 const truncate = (text, len) => (text.length > len ? text.slice(0, len) + "..." : text);
 
 
-// --- tests -----------------------------------------------------------------
 test.describe("Admin Users page", () => {
   test.beforeEach(async ({ page }) => {
     await bootstrapAdminAuth(page);
@@ -71,7 +63,6 @@ test.describe("Admin Users page", () => {
     await expect(longRow).toContainText(expectedName);
     await expect(longRow).toContainText(expectedEmail);
 
-    // keep the tooltip check as-is
     await expect(longRow).toHaveAttribute(
     "title",
     /Very Long Name That Should Truncate Nicely — reallylongemailaddress_for_testing_purposes@example\.com/
@@ -80,14 +71,12 @@ test.describe("Admin Users page", () => {
   });
 
   test("shows toast + empty state on network error", async ({ page }) => {
-    await page.route(USERS_API, r => r.abort()); // simulate failure
+    await page.route(USERS_API, r => r.abort());
 
     await page.goto(`${BASE}/dashboard/admin/users`, { waitUntil: "domcontentloaded" });
-    // give React a tick to set users = []
     await page.waitForTimeout(50);
 
     await expect(page.getByTestId("users-empty")).toHaveText("No users found.");
-    // If your toast renders into a portal, generic text match is usually fine:
     await expect(page.locator("text=Failed to fetch users")).toBeVisible();
   });
 

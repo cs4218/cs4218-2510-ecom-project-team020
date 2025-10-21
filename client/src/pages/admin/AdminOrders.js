@@ -56,7 +56,6 @@ const AdminOrders = () => {
 
           {orders?.map((o, i) => {
             const orderKey = o?._id || i;
-            // Use a stable, unique className so Playwright can scope the popup per-row if needed
             const rowPopupClass = `order-dropdown-${orderKey}`;
 
             return (
@@ -85,7 +84,6 @@ const AdminOrders = () => {
                           <Select
                             aria-label="Status"
                             data-test="order-status"
-                            // anchor the popup to this cell to avoid body-level portal flake
                             getPopupContainer={(trigger) => trigger.parentElement}
                             popupClassName={rowPopupClass}
                             dropdownMatchSelectWidth={false}
@@ -103,7 +101,6 @@ const AdminOrders = () => {
                       </td>
                       <td>{o?.buyer?.name || "—"}</td>
                       <td>
-                        {/* API commonly uses createdAt; keep a fallback to createAt */}
                         {o?.createdAt
                           ? moment(o.createdAt).fromNow()
                           : o?.createAt

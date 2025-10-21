@@ -1,15 +1,10 @@
-// client/src/components/UserMenu.spec.js
 import { test, expect } from "@playwright/test";
 
-// If you already set baseURL in playwright.config, you can use relative paths.
-// Keeping BASE makes this self-contained.
 const BASE = process.env.APP_URL || "http://localhost:3000";
 
-// Endpoints your shell/guards might ping
 const USER_AUTH_API   = "**/api/v1/auth/user-auth";
 const CATEGORY_API    = "**/api/v1/category/get-category";
 
-// --- helpers ---------------------------------------------------------------
 async function bootstrapSignedInUser(page) {
   await page.addInitScript(() => {
     const auth = {
@@ -22,13 +17,10 @@ async function bootstrapSignedInUser(page) {
 }
 
 async function stubShellApis(page) {
-  // PrivateRoute guard check for normal users
   await page.route(USER_AUTH_API, r => r.fulfill({ json: { ok: true } }));
-  // Layout/menu adjunct calls (safe stub)
   await page.route(CATEGORY_API, r => r.fulfill({ json: { success: true, category: [] } }));
 }
 
-// --- tests -----------------------------------------------------------------
 test.describe("UserMenu (user dashboard sidebar)", () => {
   test.beforeEach(async ({ page }) => {
     await bootstrapSignedInUser(page);
@@ -36,7 +28,6 @@ test.describe("UserMenu (user dashboard sidebar)", () => {
   });
 
   test("renders links with correct hrefs", async ({ page }) => {
-    // Go to the profile page, which should render <UserMenu />
     await page.goto(`${BASE}/dashboard/user/profile`, { waitUntil: "domcontentloaded" });
 
     const profileLink = page.getByRole("link", { name: "Profile" });
@@ -52,7 +43,6 @@ test.describe("UserMenu (user dashboard sidebar)", () => {
     const profileLink = page.getByRole("link", { name: "Profile" });
     const ordersLink  = page.getByRole("link", { name: "Orders" });
 
-    // React Router v6 sets aria-current="page" on the active NavLink
     await expect(profileLink).toHaveAttribute("aria-current", "page");
     await expect(ordersLink).not.toHaveAttribute("aria-current", "page");
   });

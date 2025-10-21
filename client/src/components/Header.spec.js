@@ -1,4 +1,3 @@
-// client/src/components/Header.spec.js
 import { test, expect } from "@playwright/test";
 
 const BASE = process.env.APP_URL || "http://localhost:3000";
@@ -14,7 +13,6 @@ const demoCategories = [
 ];
 
 async function stubHeaderApis(page, { categories = demoCategories } = {}) {
-  // IMPORTANT: plural "categories" to match useCategory()
   await page.route(CATEGORY_API, r => r.fulfill({ json: { success: true, categories } }));
   await page.route(USER_AUTH_API,  r => r.fulfill({ json: { ok: true } }));
   await page.route(ADMIN_AUTH_API, r => r.fulfill({ json: { ok: true } }));
@@ -49,7 +47,6 @@ async function waitForCategoriesRendered(page, expectedAtLeast = 2) {
 }
 
 async function openCategoriesDropdown(page) {
-  // first .nav-item.dropdown in your header is the Categories dropdown
   await page.evaluate(() => {
     const root = document.querySelector('.nav-item.dropdown');
     if (!root) return;
@@ -64,7 +61,6 @@ async function openCategoriesDropdown(page) {
 }
 
 async function forceOpenUserDropdown(page) {
-  // open the *user* dropdown (the second dropdown) by toggling classes
   await page.evaluate(() => {
     const dropdowns = document.querySelectorAll('.nav-item.dropdown');
     const userDd = dropdowns[1]; // categories is [0], user menu is [1]
@@ -111,12 +107,10 @@ test.describe("Header (UI)", () => {
     await bootstrapCart(page, 2);
     await gotoHeader(page, "/");
 
-    // wait for any user dropdown toggle to appear (name text may hydrate slightly later)
     await page.waitForSelector('.nav-item.dropdown .nav-link.dropdown-toggle', { timeout: 10000 });
 
     await forceOpenUserDropdown(page);
 
-    // Assert dashboard link by href (more robust than visible name)
     await expect(page.locator('a.dropdown-item[href="/dashboard/user"]')).toBeVisible();
 
     const cartLink = page.getByRole("link", { name: /Cart/i });

@@ -129,8 +129,8 @@ const Header = () => {
                     count={cart?.length}
                     showZero
                     overflowCount={99}
-                    size="small"              // AntD v5 prop; trims height
-                    className="align-middle"  // helps vertical centering
+                    size="small"              
+                    className="align-middle"  
                   />
                 </NavLink>
               </li>

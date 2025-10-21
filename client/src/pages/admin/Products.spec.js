@@ -1,8 +1,5 @@
-// client/src/pages/admin/Products.spec.js
-// at the top of client/src/pages/admin/Products.spec.js
 import { test, expect } from "@playwright/test";
 
-// Make getByTestId('x') map to [data-test="x"]
 test.use({ testIdAttribute: "data-test" });
 
 const BASE = process.env.APP_URL || "http://localhost:3000";
@@ -24,7 +21,6 @@ async function stubShellApis(page) {
   await page.route("**/api/v1/category/get-category", r =>
     r.fulfill({ json: { success: true, category: [] } })
   );
-  // let everything else pass through unless explicitly stubbed
 }
 
 const demoProducts = [
@@ -88,7 +84,6 @@ test.describe("Admin Products page", () => {
     await page.route(PRODUCTS_API, r => r.abort());
 
     await page.goto(`${BASE}/dashboard/admin/products`, { waitUntil: "domcontentloaded" });
-    // give React a tick to set products = []
     await page.waitForTimeout(50);
 
     await expect(page.getByTestId("products-empty")).toHaveText("No products found.");

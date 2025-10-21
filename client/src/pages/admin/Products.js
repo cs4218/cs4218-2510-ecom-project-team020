@@ -1,4 +1,3 @@
-// client/src/pages/admin/Products.js
 import React, { useState, useEffect } from "react";
 import AdminMenu from "../../components/AdminMenu";
 import Layout from "./../../components/Layout";
