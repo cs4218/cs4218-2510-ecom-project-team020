@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { CartPage } from "./pom/CartPage";
 
 /**
- * E2E Tests for Cart Page
+ * Playwright Basic UI tests for Cart Page - using pom
  */
 
 test.describe("Cart Page UI", () => {
@@ -30,7 +30,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC3: Tests adding one item to cart:
+   * TC2: Tests adding one item to cart:
    * 1. User adds product to cart from homepage
    * 2. Cart icon updates to show 1 item
    * 3. Navigate to cart page
@@ -55,7 +55,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC4: Tests adding multiple items to cart:
+   * TC3: Tests adding multiple items to cart:
    * 1. User adds multiple products to cart
    * 2. Cart icon updates to show correct count
    * 3. All items are displayed in cart
@@ -86,7 +86,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC5: Tests removing an item from cart:
+   * TC4: Tests removing an item from cart:
    * 1. User has items in cart
    * 2. User clicks remove button on an item
    * 3. Item is removed from cart
@@ -116,7 +116,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC6: Tests that cart items display correctly:
+   * TC5: Tests that cart items display correctly:
    * 1. User has item in cart
    * 2. Item shows product name, price, and remove button
    * 3. Cart total is calculated correctly
@@ -134,7 +134,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC8: Tests that cart total is calculated correctly:
+   * TC6: Tests that cart total is calculated correctly:
    * 1. User adds items with known prices
    * 2. Cart total reflects sum of item prices
    * 3. Total format is correct (USD currency)
@@ -153,7 +153,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC11: Payment Button Functionality
+   * TC7: Payment Button Functionality
    * 1. User has items in cart
    * 2. User clicks payment button
    * 3. Payment form is displayed (if user is logged in)
@@ -186,7 +186,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC15: Tests that cart item count is displayed correctly:
+   * TC8: Tests that cart item count is displayed correctly:
    * 1. User adds items to cart
    * 2. Cart count text shows correct number
    * 3. Count matches actual items
@@ -210,7 +210,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC12: Cart Item Information Display
+   * TC9: Cart Item Information Display
    * 1. Product name is displayed
    * 2. Product price is displayed
    * 3. Remove button is present
@@ -233,7 +233,7 @@ test.describe("Cart Page UI", () => {
   });
 
   /**
-   * TC13: Tests adding the same product multiple times:
+   * TC10: Tests adding the same product multiple times:
    * 1. User adds same product twice
    * 2. Cart should add as separate items
    * 3. Total should reflect correct calculation
@@ -261,7 +261,7 @@ test.describe("Cart Page Navigations", () => {
   });
 
   /**
-   * TC2: Tests navigation from homepage to cart
+   * TC11: Tests navigation from homepage to cart
    *
    * 1. User clicks cart icon on homepage
    * 2. Navigates to cart page
@@ -276,7 +276,7 @@ test.describe("Cart Page Navigations", () => {
     console.log("✅ Successfully navigated to cart from homepage");
   });
   /**
-   * TC7: Tests navigation from cart back to homepage:
+   * TC12: Tests navigation from cart back to homepage:
    * 1. User is on cart page
    * 2. User clicks "Continue Shopping" or "Home"
    * 3. Navigates back to homepage
@@ -293,7 +293,7 @@ test.describe("Cart Page Navigations", () => {
   });
 
   /**
-   * TC10: Cart Persistence Across Navigation
+   * TC13: Cart Persistence Across Navigation
    * 1. User adds items to cart
    * 2. User navigates to other pages
    * 3. User returns to cart
@@ -326,26 +326,23 @@ test.describe("Cart Page Edge Cases", () => {
     cartPage = new CartPage(page);
   });
   /**
-   * TC16: Tests graceful handling when cart API fails:
+   * TC14: Tests graceful handling when cart API fails:
    * 1. Mock cart API failure
    * 2. Navigate to cart page
    * 3. App handles error gracefully
    */
   test("should handle cart API failure gracefully", async ({ page }) => {
-    // ARRANGE - Mock cart API failure
     await page.route("**/api/v1/cart/**", (route) => route.abort());
 
-    // ACT - Try to navigate to cart
     await cartPage.goto();
 
-    // ASSERT - Page should load without crashing
     await cartPage.expectPageStructure();
 
     console.log("✅ Cart API failure handled gracefully");
   });
 
   /**
-   * TC17: Tests cart with many items:
+   * TC15: Tests cart with many items:
    * 1. Add many items to cart
    * 2. Verify all items are displayed
    * 3. Verify total calculation is correct
