@@ -31,6 +31,7 @@ const CartPage = () => {
       return total.toLocaleString("en-US", { style: "currency", currency: "USD" });
     } catch (error) {
       console.log(error);
+      return "Error in getTotalPrice";
     }
   };
 
@@ -46,6 +47,7 @@ const CartPage = () => {
       }
     } catch (error) {
       console.log(error);
+      return "Error in removeCartItem";
     }
   };
 
@@ -56,6 +58,7 @@ const CartPage = () => {
       setClientToken(data?.clientToken);
     } catch (error) {
       console.log(error);
+      toast.error("Error in getToken");
     }
   };
   useEffect(() => {
@@ -79,6 +82,7 @@ const CartPage = () => {
     } catch (error) {
       console.log(error);
       setLoading(false);
+      toast.error("Payment failed. Please try again.");
     }
   };
   return (
@@ -165,7 +169,7 @@ const CartPage = () => {
                         })
                       }
                     >
-                      Plase Login to checkout
+                      Please Login to checkout
                     </button>
                   )}
                 </div>
