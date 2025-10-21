@@ -42,18 +42,24 @@ export const brainTreePaymentController = async (req, res) => {
     }
 
     // Validate and compute total
-    const total = cart.reduce((sum, item, i) => {
-      if (typeof item?.price !== "number") {
-        res.status(400).json({ error: `Invalid price at index ${i}: ${item?.price}` });
-        return;
-      }
-      const price = Number(item?.price);
-      if (!Number.isFinite(price) || price < 0) {
-        res.status(400).json({ error: `Invalid price at index ${i}: ${price}` });
-        return;
-      }
-      return sum + price;
-    }, 0).toFixed(2);
+    const total = cart
+      .reduce((sum, item, i) => {
+        if (typeof item?.price !== "number") {
+          res
+            .status(400)
+            .json({ error: `Invalid price at index ${i}: ${item?.price}` });
+          return;
+        }
+        const price = Number(item?.price);
+        if (!Number.isFinite(price) || price < 0) {
+          res
+            .status(400)
+            .json({ error: `Invalid price at index ${i}: ${price}` });
+          return;
+        }
+        return sum + price;
+      }, 0)
+      .toFixed(2);
 
     if (total <= 0) {
       res.status(400).json({ error: "Total amount must be greater than 0" });
