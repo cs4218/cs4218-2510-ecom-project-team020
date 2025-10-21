@@ -12,8 +12,7 @@ var gateway = new braintree.BraintreeGateway({
   privateKey: process.env.BRAINTREE_PRIVATE_KEY,
 });
 
-//payment gateway api
-//token
+//payment gateway api token
 export const braintreeTokenController = async (req, res) => {
   try {
     gateway.clientToken.generate({}, function (error, response) {
@@ -33,45 +32,64 @@ export const braintreeTokenController = async (req, res) => {
 export const brainTreePaymentController = async (req, res) => {
   try {
     const { nonce, cart } = req.body;
-    const total =
-      Math.round(
-        cart.reduce((sum, item, i) => {
-          const price = item?.price;
+    if (!Array.isArray(cart) || cart.length === 0) {
+      res.status(400).json({ error: "Cart is required" });
+      return;
+    }
+    if (!nonce) {
+      res.status(400).json({ error: "Payment nonce is required" });
+      return;
+    }
 
-          if ( typeof price !== "number" || !Number.isFinite(price) || price < 0) {
-            throw new TypeError(`Invalid price at index ${i}: ${price}`);
-          }
-          return sum + price;
-        }, 0) * 100
-      ) / 100;
-    let newTransaction = gateway.transaction.sale(
-      {
-        amount: total,
-        paymentMethodNonce: nonce,
-        options: {
-          submitForSettlement: true,
-        },
-      },
-      async function (error, result) {
-        if (result) {
-          try {
-            const order = await new orderModel({
-              products: cart,
-              payment: result,
-              buyer: req.user._id,
-            }).save();
-            res.json({ ok: true, orderId: order._id });
-          } catch (dbError) {
-            console.error("Database error:", dbError);
-            res.status(500).json({ error: "Failed to create order" });
-          }
-        } else {
-          res.status(500).json({ error: "Payment failed" });
-        }
+    // Validate and compute total
+    const total = cart.reduce((sum, item, i) => {
+      if (typeof item?.price !== "number") {
+        res.status(400).json({ error: `Invalid price at index ${i}: ${item?.price}` });
+        return;
       }
-    );
+      const price = Number(item?.price);
+      if (!Number.isFinite(price) || price < 0) {
+        res.status(400).json({ error: `Invalid price at index ${i}: ${price}` });
+        return;
+      }
+      return sum + price;
+    }, 0).toFixed(2);
+
+    if (total <= 0) {
+      res.status(400).json({ error: "Total amount must be greater than 0" });
+      return;
+    }
+
+    // Process transaction (wrap in Promise)
+    const result = await new Promise((resolve, reject) => {
+      gateway.transaction.sale(
+        {
+          amount: total,
+          paymentMethodNonce: nonce,
+          options: { submitForSettlement: true },
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+    });
+
+    // Handle result
+    if (result?.success) {
+      const order = await new orderModel({
+        products: cart,
+        payment: result,
+        buyer: req.user._id,
+      }).save();
+      res.json({ ok: true, orderId: order._id });
+      return;
+    }
+    res.status(500).json({ error: result.message || "Payment failed" });
+    return;
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Payment controller error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+    return;
   }
 };

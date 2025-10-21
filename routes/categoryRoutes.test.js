@@ -64,7 +64,7 @@ describe("categoryRoutes wiring", () => {
     const res = await request(app).get("/get-category");
     expect(res.status).toBe(200);
     expect(res.body.hit).toBe("list");
-    expect(res.body.calls).toEqual([]); // none ran
+    expect(res.body.calls).toEqual([]);
   });
 
   // Classification: Communication-based (verifies no middleware execution), Output-based (verifies route response)
