@@ -52,3 +52,8 @@ Thumbs.db
 # Documentation (custom)
 /.md/
 /.cursor/
+
+/integration_test_docs/
+
+/e2e_test_docs/
+.AGENTS.md

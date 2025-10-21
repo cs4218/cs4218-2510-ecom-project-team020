@@ -4,5 +4,8 @@ export default {
   projects: [
     "<rootDir>/jest.backend.config.js",
     "<rootDir>/jest.frontend.config.js"
-  ]
+  ],
+  // Combined coverage settings
+  collectCoverage: true,
+  coverageDirectory: "<rootDir>/coverage",
 };

@@ -130,7 +130,7 @@ describe("PaymentController", () => {
 
       expect(gateway.transaction.sale).toHaveBeenCalledWith(
         expect.objectContaining({
-          amount: 300,
+          amount: "300.00",
           paymentMethodNonce: "test-nonce",
           options: {
             submitForSettlement: true,
@@ -142,43 +142,29 @@ describe("PaymentController", () => {
     });
 
     it("should raise an error for items with negative price", async () => {
-      const cart = [{ _id: "1", name: "Product 1", price: -1 }];  
-      const req = {
-        body: {
-          nonce: "test-nonce",
-          cart,
-        },
-        user: { _id: "user123" },
-      };
+      const cart = [{ _id: "1", name: "Product 1", price: -1 }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
       const res = mockResponse();
-
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
 
       await brainTreePaymentController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Invalid price at index 0: -1",
+      });
     });
 
-        it("should raise an error for items with non-numeric price", async () => {
-      const cart = [{ _id: "1", name: "Product 1", price: "1" }];  
-      const req = {
-        body: {
-          nonce: "test-nonce",
-          cart,
-        },
-        user: { _id: "user123" },
-      };
+    it("should raise an error for items with non-numeric price", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: "1" }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
       const res = mockResponse();
-
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
 
       await brainTreePaymentController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Internal server error" });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Invalid price at index 0: 1",
+      });
     });
 
     it("should handle payment error", async () => {
@@ -193,8 +179,7 @@ describe("PaymentController", () => {
 
       const braintree = require("braintree");
       const gateway = new braintree.BraintreeGateway();
-
-      const mockError = new Error("Payment failed");
+      const mockError = new Error("Payment error");
       gateway.transaction.sale.mockImplementation((options, callback) => {
         callback(mockError, null);
       });
@@ -202,7 +187,83 @@ describe("PaymentController", () => {
       await brainTreePaymentController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Payment failed" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Payment error" });
+    });
+
+    it("should raise an error for zero total amount", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: 0 }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
+      const res = mockResponse();
+
+      await brainTreePaymentController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Total amount must be greater than 0",
+      });
+    });
+
+    it("should not raise an error for non-zero total amount", async () => {
+      const cart = [{ _id: "1", name: "Product 1", price: 0.01 }];
+      const req = { body: { nonce: "test-nonce", cart }, user: { _id: "user123" } };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+      const mockResult = { id: "transaction123", success: true };
+      gateway.transaction.sale.mockImplementation((options, callback) => {
+        callback(null, mockResult);
+      });
+
+      const mockSave = jest.fn().mockResolvedValue(true);
+      orderModel.mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      await brainTreePaymentController(req, res);
+
+      expect(gateway.transaction.sale).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: "0.01",
+        }),
+        expect.any(Function)
+      );
+    });
+
+
+    it("should calculate total correctly with one item", async () => {
+      const req = {
+        body: {
+          nonce: "test-nonce",
+          cart: [
+            { _id: "1", price: 99.99 },
+          ],
+        },
+        user: { _id: "user123" },
+      };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+
+      const mockResult = { id: "transaction123", success: true };
+      gateway.transaction.sale.mockImplementation((options, callback) => {
+        callback(null, mockResult);
+      });
+
+      const mockSave = jest.fn().mockResolvedValue(true);
+      orderModel.mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      await brainTreePaymentController(req, res);
+
+      expect(gateway.transaction.sale).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: "99.99",
+        }),
+        expect.any(Function)
+      );
     });
 
     it("should calculate total correctly with multiple items", async () => {
@@ -236,7 +297,44 @@ describe("PaymentController", () => {
 
       expect(gateway.transaction.sale).toHaveBeenCalledWith(
         expect.objectContaining({
-          amount: 300, // 99.99 + 149.99 + 50.02 = 300
+          amount: "300.00", // 99.99 + 149.99 + 50.02 = 300
+        }),
+        expect.any(Function)
+      );
+    });
+
+    it("should calculate total to 2dp correctly with multiple items", async () => {
+      const req = {
+        body: {
+          nonce: "test-nonce",
+          cart: [
+            { _id: "1", price: 99.99 },
+            { _id: "2", price: 149.99 },
+            { _id: "3", price: 50.03 },
+          ],
+        },
+        user: { _id: "user123" },
+      };
+      const res = mockResponse();
+
+      const braintree = require("braintree");
+      const gateway = new braintree.BraintreeGateway();
+
+      const mockResult = { id: "transaction123", success: true };
+      gateway.transaction.sale.mockImplementation((options, callback) => {
+        callback(null, mockResult);
+      });
+
+      const mockSave = jest.fn().mockResolvedValue(true);
+      orderModel.mockImplementation(() => ({
+        save: mockSave,
+      }));
+
+      await brainTreePaymentController(req, res);
+
+      expect(gateway.transaction.sale).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: "300.01", // 99.99 + 149.99 + 50.02 = 300
         }),
         expect.any(Function)
       );
@@ -267,18 +365,13 @@ describe("PaymentController", () => {
 
       await brainTreePaymentController(req, res);
 
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        expect.objectContaining({
-          amount: 0,
-        }),
-        expect.any(Function)
-      );
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Cart is required" });
     });
 
-    it("should handle cart with single item", async () => {
+    it("should handle missing nonce", async () => {
       const req = {
         body: {
-          nonce: "test-nonce",
           cart: [{ _id: "1", price: 49.99 }],
         },
         user: { _id: "user123" },
@@ -300,50 +393,8 @@ describe("PaymentController", () => {
 
       await brainTreePaymentController(req, res);
 
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        expect.objectContaining({
-          amount: 49.99,
-        }),
-        expect.any(Function)
-      );
-      expect(res.json).toHaveBeenCalledWith({ ok: true });
-    });
-
-    it("should handle decimal precision in price calculations", async () => {
-      const req = {
-        body: {
-          nonce: "test-nonce",
-          cart: [
-            { _id: "1", price: 19.99 },
-            { _id: "2", price: 29.99 },
-            { _id: "3", price: 0.01 },
-          ],
-        },
-        user: { _id: "user123" },
-      };
-      const res = mockResponse();
-
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockResult = { id: "transaction123", success: true };
-      gateway.transaction.sale.mockImplementation((options, callback) => {
-        callback(null, mockResult);
-      });
-
-      const mockSave = jest.fn().mockResolvedValue(true);
-      orderModel.mockImplementation(() => ({
-        save: mockSave,
-      }));
-
-      await brainTreePaymentController(req, res);
-
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        expect.objectContaining({
-          amount: 49.99, // 19.99 + 29.99 + 0.01 = 49.99
-        }),
-        expect.any(Function)
-      );
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Payment nonce is required" });
     });
 
     it("should handle network timeout errors", async () => {
@@ -368,7 +419,7 @@ describe("PaymentController", () => {
       await brainTreePaymentController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Payment failed" });
+      expect(res.json).toHaveBeenCalledWith({ error: "Network timeout" });
     });
 
     it("should create order after successful payment", async () => {

@@ -19,23 +19,29 @@ module.exports = {
   // ignore all node_modules except styleMock (needed for css imports)
   transformIgnorePatterns: ["/node_modules/(?!(styleMock\\.js)$)"],
 
-  // only run these tests
+  // only run these tests (exclude .spec.js which are Playwright tests)
   testMatch: [
     "<rootDir>/client/src/pages/**/*.test.js",
     "<rootDir>/client/src/hooks/**/*.test.js",
     "<rootDir>/client/src/components/**/*.test.js",
     "<rootDir>/client/src/context/**/*.test.js",
-    "<rootDir>/client/src/components/**/*.test.js",
+  ],
+  
+  // explicitly ignore Playwright test files
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "\\.spec\\.js$"
   ],
 
   // jest code coverage
   collectCoverage: true,
+  coverageDirectory: "<rootDir>/coverage/frontend",
   collectCoverageFrom: [
     "client/src/pages/**/*.js",
     "client/src/hooks/**/*.js",
     "client/src/components/**/*.js",
     "client/src/context/**/*.js",
-    "client/src/components/**/*.js",
+    "!**/*.spec.js", // exclude Playwright test files from coverage
   ],
   coverageThreshold: {
     global: {
