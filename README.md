@@ -6,7 +6,7 @@ Milestone 2 CI Report:
 ## Workload Distribution
 **Ritika Manish Joshi @rmj1405**
 
-AI Declaration: Unit tests generated with AI assistance but were all curated, validated and refined by me.
+AI Declaration: Integration and E2E tests were generated with AI assistance but were all curated, validated and refined by Ritika Manish Joshi @rmj1405.
 ### Integration Tests
 | Domain | File | Description |
 | ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
