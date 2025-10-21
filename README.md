@@ -31,6 +31,7 @@ AI Declaration: Unit tests files were generated with AI assistance but ALL test 
 | Create Category Page | `client/src/pages/admin/CreateCategory.test.js` | Admin can create new categories with proper validation, error handling, and success notifications using pairwise combinatorial and decision tree testing. |
 | Create Product Page | `client/src/pages/admin/CreateProduct.test.js` | Admin can create new products with comprehensive field validation, file uploads, and API integration using pairwise combinatorial and decision tree testing. |
 | Update Product Page | `client/src/pages/admin/UpdateProduct.test.js` | Admin can update existing products with form pre-population, validation, deletion functionality using pairwise combinatorial testing. |
+| AdminRoute | `client/src/components/Routes/AdminRoute.test.js` | Tests admin route guarding: redirects non-admin users, renders children for admin users, and handles auth state changes. |
 | Category Controller (CUD) | `controllers/categoryController.test.js` | Create, Update, Delete category operations work correctly with proper error handling and data validation. |
 | Category Routes (CUD) | `routes/categoryRoutes.test.js` | Category create, update, delete endpoints are properly secured, mapped, and handle authentication requirements. |
 
@@ -91,6 +92,27 @@ AI Declaration: Unit tests files were generated with AI assistance but ALL test 
 | Contact Page                  | `client/src/pages/Contact.test.js`         | Verifies contact information display, icon integration, layout structure, accessibility compliance, and static content validation with comprehensive UI testing.           |
 | Product Controller (Backend)  | `controllers/productController.test.js`    | Comprehensive testing of all product CRUD operations, search functionality, filtering, pagination, file uploads, and error handling using EP/BVA and boundary testing.     |
 | Database Connection (Backend) | `config/db.test.js`                        | Tests MongoDB connection establishment, error handling, environment configuration, timeout scenarios, and connection state management with various network conditions.     |
+
+# Milestone 2
+
+**Gerald Ng Jun Xiang @geraldngjx**
+
+AI Declaration (Integration & E2E): Integration and end-to-end tests listed below were created with AI assistance but were curated, validated, and refined by Gerald Ng Jun Xiang (@geraldngjx).
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E2E - Create Category | `e2e/create-category.spec.js` | End-to-end test that automates creating a category via the UI and verifies server-side persistence and user-facing feedback. |
+| E2E - Create Product | `e2e/create-product.spec.js` | End-to-end test that covers creating a product including file upload flows, form validation, and API integration. |
+| E2E - Update Product | `e2e/update-product.spec.js` | End-to-end test that covers updating product details, form pre-population, and save/delete flows. |
+| UI - Create Category Page | `client/src/pages/admin/CreateCategory.test.js` | UI tests for create-category page ensuring form validation, submission, and success/error handling. |
+| UI - Category Form Component | `client/src/components/Form/CategoryForm.test.js` | UI tests for the category form component covering input validation and submission behavior. |
+| UI - Admin Dashboard | `client/src/pages/admin/AdminDashboard.test.js` | UI tests for admin dashboard interactions and rendering under different auth states. |
+| UI - Admin Menu Component | `client/src/components/AdminMenu.test.js` | UI tests for admin navigation and routing. |
+| UI - Create Product Page | `client/src/pages/admin/CreateProduct.test.js` | UI tests for product creation flows and validations. |
+| UI - Update Product Page | `client/src/pages/admin/UpdateProduct.test.js` | UI tests for product update flows, pre-population and deletion behavior. |
+| Integration - CreateCategoryController | `controllers/createCategoryController.integration.test.js` | Integration tests for creating categories, validating request handling and DB persistence. |
+| Integration - UpdateCategoryController | `controllers/updateCategoryController.integration.test.js` | Integration tests for updating categories and validation flows. |
+| Integration - DeleteCategoryController | `controllers/deleteCategoryController.integration.test.js` | Integration tests for deleting categories and ensuring proper cleanup and responses. |
+| Integration - Category Routes | `routes/categoryRoutes.integration.test.js` | Integration tests for the category routes wiring, auth checks, and endpoint behaviours. |
 
 # Project Information
 
