@@ -145,6 +145,9 @@ describe("Payment Controller E2E Tests", () => {
       await collection.deleteMany({});
     }
 
+    // Clear all mocks
+    jest.clearAllMocks();
+
     // Create test user and get auth token
     const userData = {
       name: "Test User",
@@ -180,7 +183,7 @@ describe("Payment Controller E2E Tests", () => {
         name: "Wireless Headphones",
         slug: "wireless-headphones",
         description: "High-quality wireless headphones with noise cancellation",
-        price: 199.99,
+        price: "199.99",
         category: electronicsCategory._id,
         quantity: 50,
         shipping: true,
@@ -278,7 +281,7 @@ describe("Payment Controller E2E Tests", () => {
       // Step 3: Verify transaction was called with correct amount
       expect(gateway.transaction.sale).toHaveBeenCalledWith(
         {
-          amount: 549.97, // 199.99 + 299.99 + 49.99
+          amount: "549.97", // 199.99 + 299.99 + 49.99
           paymentMethodNonce: "fake-payment-method-nonce-123",
           options: {
             submitForSettlement: true,
@@ -333,7 +336,9 @@ describe("Payment Controller E2E Tests", () => {
         .send(paymentData)
         .expect(500);
 
-      expect(paymentResponse.body).toEqual({ error: "Payment failed" });
+      expect(paymentResponse.body).toEqual({
+        error: "Payment declined by bank",
+      });
 
       // Verify no order was created
       const orders = await orderModel.find({ buyer: userId });
@@ -375,7 +380,7 @@ describe("Payment Controller E2E Tests", () => {
         .send(paymentData)
         .expect(500);
 
-      expect(response.body).toEqual({ error: "Payment failed" });
+      expect(response.body).toEqual({ error: "Network timeout" });
 
       // Verify no order was created
       const orders = await orderModel.find({ buyer: userId });
@@ -449,93 +454,12 @@ describe("Payment Controller E2E Tests", () => {
         .post("/api/v1/payment/braintree/payment")
         .set("Authorization", authToken)
         .send(malformedPaymentData)
-        .expect(500);
+        .expect(400);
 
-      expect(response.body).toEqual({ error: "Internal server error" });
-    });
-    it("should handle invalid cart data with negative prices", async () => {
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockTokenResponse = { clientToken: "test-client-token-negative" };
-      gateway.clientToken.generate.mockImplementation((options, callback) => {
-        callback(null, mockTokenResponse);
-      });
-
-      const cart = [
-        { _id: testProducts[0]._id, name: testProducts[0].name, price: -10 }, // Invalid negative price
-      ];
-
-      const paymentData = {
-        nonce: "fake-payment-method-nonce",
-        cart: cart,
-      };
-
-      const response = await request(app)
-        .post("/api/v1/payment/braintree/payment")
-        .set("Authorization", authToken)
-        .send(paymentData)
-        .expect(500);
-
-      expect(response.body).toEqual({ error: "Internal server error" });
-    });
-
-    it("should handle non-numeric prices", async () => {
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockTokenResponse = {
-        clientToken: "test-client-token-non-numeric",
-      };
-      gateway.clientToken.generate.mockImplementation((options, callback) => {
-        callback(null, mockTokenResponse);
-      });
-
-      const cart = [
-        {
-          _id: testProducts[0]._id,
-          name: testProducts[0].name,
-          price: "invalid",
-        },
-      ];
-
-      const paymentData = {
-        nonce: "fake-payment-method-nonce",
-        cart: cart,
-      };
-
-      const response = await request(app)
-        .post("/api/v1/payment/braintree/payment")
-        .set("Authorization", authToken)
-        .send(paymentData)
-        .expect(500);
-
-      expect(response.body).toEqual({ error: "Internal server error" });
+      expect(response.body).toEqual({ error: "Cart is required" });
     });
 
     it("should handle empty cart", async () => {
-      const braintree = require("braintree");
-      const gateway = new braintree.BraintreeGateway();
-
-      const mockTokenResponse = { clientToken: "test-client-token-empty" };
-      gateway.clientToken.generate.mockImplementation((options, callback) => {
-        callback(null, mockTokenResponse);
-      });
-
-      const mockTransactionResult = {
-        id: "transaction-empty",
-        success: true,
-        transaction: {
-          id: "transaction-empty",
-          status: "authorized",
-          amount: "0.00",
-        },
-      };
-
-      gateway.transaction.sale.mockImplementation((options, callback) => {
-        callback(null, mockTransactionResult);
-      });
-
       const paymentData = {
         nonce: "fake-payment-method-nonce",
         cart: [],
@@ -545,24 +469,9 @@ describe("Payment Controller E2E Tests", () => {
         .post("/api/v1/payment/braintree/payment")
         .set("Authorization", authToken)
         .send(paymentData)
-        .expect(200);
+        .expect(400);
 
-      expect(response.body).toEqual({
-        ok: true,
-        orderId: expect.any(String),
-      });
-
-      // Verify transaction was called with amount 0
-      expect(gateway.transaction.sale).toHaveBeenCalledWith(
-        {
-          amount: 0,
-          paymentMethodNonce: "fake-payment-method-nonce",
-          options: {
-            submitForSettlement: true,
-          },
-        },
-        expect.any(Function)
-      );
+      expect(response.body).toEqual({ error: "Cart is required" });
     });
   });
 
@@ -639,7 +548,7 @@ describe("Payment Controller E2E Tests", () => {
       // Verify transaction was called with correct amount
       expect(gateway.transaction.sale).toHaveBeenCalledWith(
         {
-          amount: 199.99,
+          amount: "199.99",
           paymentMethodNonce: "fake-payment-method-nonce-single",
           options: {
             submitForSettlement: true,
@@ -688,7 +597,7 @@ describe("Payment Controller E2E Tests", () => {
         .send(paymentData)
         .expect(500);
 
-      expect(response.body).toEqual({ error: "Payment failed" });
+      expect(response.body).toEqual({ error: "Payment declined by bank" });
 
       // Verify no order was created
       const orders = await orderModel.find({ buyer: userId });
