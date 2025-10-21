@@ -66,6 +66,24 @@ AI Declaration: Integration and E2E tests were created with AI assistance but we
 | Product Details | `e2e/product-details.spec.ts` | E2E tests for product details: displaying product information, adding main and similar products to cart, navigation between products, price formatting, API error handling, image loading, and rapid clicks (17 test cases). |
 | Category Products | `e2e/category-products.spec.ts` | E2E tests for category products: filtering by category, displaying product cards, navigation between categories, price/description display, result count accuracy, and API error handling (16 test cases). |
 
+**Tan Wee Kian, Justin @jyztintan**
+
+AI Declaration: E2E tests files were generated with AI assistance but ALL test cases are refined and validated.
+
+### Integration Tests
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payment Controller | `controllers/paymentController.integration.test.js` | Integration tests for payment controller: obtaining payment token, checkout total, order creation, and failed payment handling. |
+| Category Workflow | `client/src/pages/Categories.integration.test.js` | Integration tests for category workflow: getting all and single categories, with API error handling. |
+
+### UI/E2E Tests
+
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cart Page | `e2e/cart-page.spec.ts` | E2E tests for cart page: displaying cart items, adding/removing items, calculating total, payment button functionality, and API error handling. |
+| Cart Core E2E Tests | `e2e/cart-core-e2e.spec.ts` | E2E tests for cart core functionality: browsing products, adding to cart, navigating to cart, and attempting payment (both logged in and guest users). |
+| Policy Navigation | `e2e/policy-navigation.spec.ts` | E2E tests for policy page navigation: displaying policy page content, navigating to/from policy page, footer navigation, browser back/forward navigation, and policy page accessibility. |
+
 
 # Milestone 1
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/18263851475/job/51995447912
