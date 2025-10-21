@@ -47,6 +47,25 @@ AI Declaration (Integration & E2E): Integration and end-to-end tests listed belo
 | Integration - DeleteCategoryController | `controllers/deleteCategoryController.integration.test.js` | Integration tests for deleting categories and ensuring proper cleanup and responses. |
 | Integration - Category Routes | `routes/categoryRoutes.integration.test.js` | Integration tests for the category routes wiring, auth checks, and endpoint behaviours. |
 
+**Yip Sin Hang @simbayippy**
+
+AI Declaration: Integration and E2E tests were created with AI assistance but were all curated, validated, and refined by me.
+
+### Integration Tests
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product Controller | `controllers/productController.integration.test.js` | Integration tests for product controller: authentication/authorization flows, CRUD operations, filtering, pagination, search, related products, and photo delivery using MongoMemoryServer and supertest. |
+| Search Workflow | `client/src/pages/Search.integration.test.js` | Integration tests for search functionality: form submission through SearchInput, axios API calls, SearchProvider state management, navigation, and CartProvider persistence with localStorage. |
+| Product Details | `client/src/pages/ProductDetails.integration.test.js` | Integration tests for product details: loading product data, adding to cart with persistence, related products functionality, and navigation flows with real context providers and React Router. |
+| Category Product | `client/src/pages/CategoryProduct.integration.test.js` | Integration tests for category product page: fetching category data via axios, rendering product cards, navigation to product details, and slug change refetching with MemoryRouter. |
+
+### UI/E2E Tests
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Search Functionality | `e2e/search.spec.ts` | E2E tests for search: valid/invalid keyword searches, navigation to product details, add to cart, special characters, API error handling, case-insensitive search, description matching, and rapid searches (17 test cases). |
+| Product Details | `e2e/product-details.spec.ts` | E2E tests for product details: displaying product information, adding main and similar products to cart, navigation between products, price formatting, API error handling, image loading, and rapid clicks (17 test cases). |
+| Category Products | `e2e/category-products.spec.ts` | E2E tests for category products: filtering by category, displaying product cards, navigation between categories, price/description display, result count accuracy, and API error handling (16 test cases). |
+
 
 # Milestone 1
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/18263851475/job/51995447912
