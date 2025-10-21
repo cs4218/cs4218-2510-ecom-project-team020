@@ -87,6 +87,136 @@ describe("Category Routes Integration Tests", () => {
     await categoryModel.deleteMany({});
   });
 
+  describe("GET /api/v1/category/get-category - GetCategoriesController Integration", () => {
+    it("should return empty array when no categories exist", async () => {
+      const response = await request(app).get("/api/v1/category/get-category");
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe(
+        "All categories retrieved successfully"
+      );
+      expect(response.body.categories).toEqual([]);
+    });
+
+    it("should return all categories when they exist", async () => {
+      // Create test categories
+      const categories = [
+        { name: "Electronics", slug: "electronics" },
+        { name: "Books", slug: "books" },
+        { name: "Clothing", slug: "clothing" },
+      ];
+
+      for (const cat of categories) {
+        await categoryModel.create(cat);
+      }
+
+      const response = await request(app).get("/api/v1/category/get-category");
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe(
+        "All categories retrieved successfully"
+      );
+      expect(response.body.categories).toHaveLength(3);
+
+      // Verify all categories are returned
+      const categoryNames = response.body.categories.map((cat) => cat.name);
+      expect(categoryNames).toContain("Electronics");
+      expect(categoryNames).toContain("Books");
+      expect(categoryNames).toContain("Clothing");
+    });
+
+    it("should return categories with correct structure", async () => {
+      // Create a category
+      await categoryModel.create({
+        name: "Test Category",
+        slug: "test-category",
+      });
+
+      const response = await request(app).get("/api/v1/category/get-category");
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.categories).toHaveLength(1);
+
+      const category = response.body.categories[0];
+      expect(category).toHaveProperty("_id");
+      expect(category).toHaveProperty("name");
+      expect(category).toHaveProperty("slug");
+      expect(category.name).toBe("Test Category");
+      expect(category.slug).toBe("test-category");
+    });
+  });
+  
+  describe("GET /api/v1/category/single-category/:slug - SingleCategoryController Integration", () => {
+    it("should return category when valid slug is provided", async () => {
+      // Create a category
+      await categoryModel.create({
+        name: "Electronics",
+        slug: "electronics",
+      });
+
+      const response = await request(app).get(
+        "/api/v1/category/single-category/electronics"
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe("Category retrieved successfully");
+      expect(response.body.category).toBeDefined();
+      expect(response.body.category.name).toBe("Electronics");
+      expect(response.body.category.slug).toBe("electronics");
+    });
+
+    it("should return null category when slug does not exist", async () => {
+      const response = await request(app).get(
+        "/api/v1/category/single-category/non-existent"
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe("Category retrieved successfully");
+      expect(response.body.category).toBeNull();
+    });
+
+    it("should handle URL encoding in slug parameter", async () => {
+      // Create a category with special characters
+      await categoryModel.create({
+        name: "Special & Category",
+        slug: "special-category",
+      });
+
+      const response = await request(app).get(
+        "/api/v1/category/single-category/special-category"
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.category.name).toBe("Special & Category");
+      expect(response.body.category.slug).toBe("special-category");
+    });
+
+    it("should handle very long slug parameters", async () => {
+      const longSlug =
+        "very-long-category-slug-that-might-cause-issues-with-routing";
+
+      await categoryModel.create({
+        name: "Long Slug Category",
+        slug: longSlug,
+      });
+
+      const response = await request(app).get(
+        `/api/v1/category/single-category/${longSlug}`
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.category.name).toBe("Long Slug Category");
+      expect(response.body.category.slug).toBe(longSlug);
+    });
+  });
+
   describe("POST /api/v1/category/create-category - CreateCategoryController Integration", () => {
     // Integration test: Testing full flow from route -> middleware -> controller -> database
     it("should successfully create a new category with admin authentication", async () => {
@@ -104,7 +234,9 @@ describe("Category Routes Integration Tests", () => {
       expect(response.body.category.slug).toBe("electronics");
 
       // Verify category was actually saved to database
-      const savedCategory = await categoryModel.findOne({ name: "Electronics" });
+      const savedCategory = await categoryModel.findOne({
+        name: "Electronics",
+      });
       expect(savedCategory).toBeTruthy();
       expect(savedCategory.name).toBe("Electronics");
       expect(savedCategory.slug).toBe("electronics");
@@ -123,7 +255,9 @@ describe("Category Routes Integration Tests", () => {
       expect(response.body.message).toBe("Forbidden");
 
       // Verify category was not created in database
-      const savedCategory = await categoryModel.findOne({ name: "Electronics" });
+      const savedCategory = await categoryModel.findOne({
+        name: "Electronics",
+      });
       expect(savedCategory).toBeNull();
     });
 
@@ -155,7 +289,9 @@ describe("Category Routes Integration Tests", () => {
       expect(response.body.message).toBe("Category Already Exists");
 
       // Verify only one category exists in database
-      const categoryCount = await categoryModel.countDocuments({ name: "Electronics" });
+      const categoryCount = await categoryModel.countDocuments({
+        name: "Electronics",
+      });
       expect(categoryCount).toBe(1);
     });
 
@@ -175,9 +311,9 @@ describe("Category Routes Integration Tests", () => {
 
     beforeEach(async () => {
       // Create a category to update
-      const category = await categoryModel.create({ 
-        name: "Electronics", 
-        slug: "electronics" 
+      const category = await categoryModel.create({
+        name: "Electronics",
+        slug: "electronics",
       });
       categoryId = category._id;
     });
@@ -249,9 +385,9 @@ describe("Category Routes Integration Tests", () => {
 
     beforeEach(async () => {
       // Create a category to delete
-      const category = await categoryModel.create({ 
-        name: "Electronics", 
-        slug: "electronics" 
+      const category = await categoryModel.create({
+        name: "Electronics",
+        slug: "electronics",
       });
       categoryId = category._id;
     });
@@ -298,8 +434,9 @@ describe("Category Routes Integration Tests", () => {
     });
 
     it("should reject deletion without authorization token", async () => {
-      const response = await request(app)
-        .delete(`/api/v1/category/delete-category/${categoryId}`);
+      const response = await request(app).delete(
+        `/api/v1/category/delete-category/${categoryId}`
+      );
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
@@ -357,13 +494,13 @@ describe("Category Routes Integration Tests", () => {
         request(app)
           .post("/api/v1/category/create-category")
           .set("authorization", adminToken)
-          .send({ name: "Category 3" })
+          .send({ name: "Category 3" }),
       ];
 
       const responses = await Promise.all(createPromises);
 
       // All should succeed
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(201);
         expect(response.body.success).toBe(true);
       });
