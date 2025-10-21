@@ -1,8 +1,37 @@
 # CS4218 Project - Virtual Vault
 
+# Milestone 2
+Milestone 2 CI Report:
+
+## Workload Distribution
+**Ritika Manish Joshi @rmj1405**
+
+AI Declaration: Unit tests generated with AI assistance but were all curated, validated and refined by me.
+### Integration Tests
+| Domain | File | Description |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth Controller | `controllers/authController.integration.test.js` | Integration tests for authController: register, login, forgot-password, profile update and order-related endpoints using an in-memory MongoDB and Express routes. |
+| Footer | `client/src/components/Footer.integration.test.js` | Tests Footer component rendering and navigation links across routes. |
+| Register | `client/src/pages/Auth/Register.integration.test.js` | Integration tests for the Register page: form validation, API calls, toast feedback and navigation to /login. |
+| HomePage | `client/src/pages/HomePage.integration.test.js` | Tests HomePage behavior: fetching categories/products, add-to-cart, navigation, load-more, filtering and error handling. |
+| Profile | `client/src/pages/user/Profile.integration.test.js` | Tests Profile page: loading/updating user data, validation (password/phone), context/localStorage updates and toast/error flows. |
+| Orders | `client/src/pages/user/Orders.integration.test.js` | Tests Orders page: fetching and rendering orders, empty/no-auth cases and graceful API error handling. |
+| Dashboard | `client/src/pages/user/Profile.integration.test.js` | Tests Dashboard page UI: displays user info and handles missing or null auth data. |
+
+### UI/E2E Tests
+| Domain | File | Description |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HomePage | `e2e/homepage.spec.ts` | E2E tests for homepage: product listing, filtering (checkbox/radio), navigation to product details, add-to-cart behavior, load-more and API error handling. |
+| Footer | `e2e/footer.spec.ts` | E2E footer accessibility and navigation tests: snapshot of footer ARIA structure, link navigation (About/Contact/Privacy) and browser back-button behavior for logged-in and logged-out users. |
+| Register | `e2e/register.spec.ts` | E2E registration and auth tests: form validation (email/password/phone), successful register→login→logout flows, duplicate-user and API-failure scenarios. |
+| Profile | `e2e/profile.spec.ts` | E2E tests for user profile flows: viewing/updating profile, validation (phone/password), password-change/login flows, persistence after refresh, and error handling on failed updates. |
+| Orders | `e2e/orders.spec.ts` | E2E order management tests: placing orders (payment flow), orders list/table assertions, navigation to Orders, handling empty/error states and unauthenticated redirects. |
+| Dashboard | `e2e/dashboard.spec.ts` | E2E dashboard tests: displaying user details and verifying dashboard navigation links (Profile & Orders). |
+
+
 # Milestone 1
 Milestone 1 CI Report: https://github.com/cs4218/cs4218-2510-ecom-project-team020/actions/runs/18263851475/job/51995447912
- 
+
 ## Workload Distribution
 
 **Tan Wee Kian, Justin @jyztintan**
