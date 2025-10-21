@@ -82,7 +82,6 @@ test.describe("Policy Page Navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Privacy Policy" })
     ).toBeVisible();
-    console.log("✅ Navigated to policy page from about page footer");
 
     // Test from contact page
     await page.getByRole("link", { name: "Contact" }).click();
@@ -92,7 +91,6 @@ test.describe("Policy Page Navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Privacy Policy" })
     ).toBeVisible();
-    console.log("✅ Navigated to policy page from contact page footer");
 
     // Test from cart page
     await page.getByRole("link", { name: "Cart" }).click();
@@ -104,7 +102,6 @@ test.describe("Policy Page Navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Privacy Policy" })
     ).toBeVisible();
-    console.log("✅ Navigated to policy page from cart page footer");
   });
 
   /**
@@ -124,17 +121,14 @@ test.describe("Policy Page Navigation", () => {
 
     await page.getByRole("link", { name: "About" }).click();
     await expect(page.getByRole("heading", { name: /About/i })).toBeVisible();
-    console.log("✅ Navigated from Policy to About page");
 
     await page.getByRole("link", { name: "Contact" }).click();
     await expect(page.getByRole("heading", { name: /Contact/i })).toBeVisible();
-    console.log("✅ Navigated from About to Contact page");
 
     await page.getByRole("link", { name: "Home" }).click();
     await expect(
       page.getByRole("heading", { name: "All Products" })
     ).toBeVisible();
-    console.log("✅ Navigated from Contact to Homepage");
   });
 
   /**
@@ -156,19 +150,16 @@ test.describe("Policy Page Navigation", () => {
     await expect(
       page.getByRole("heading", { name: "Privacy Policy" })
     ).toBeVisible();
-    console.log("✅ Navigated to policy page");
 
     await page.goBack();
     await expect(
       page.getByRole("heading", { name: "All Products" })
     ).toBeVisible();
-    console.log("✅ Browser back button worked correctly");
 
     await page.goForward();
     await expect(
       page.getByRole("heading", { name: "Privacy Policy" })
     ).toBeVisible();
-    console.log("✅ Browser forward button worked correctly");
   });
 
   /**
@@ -195,6 +186,5 @@ test.describe("Policy Page Navigation", () => {
     ).toBeVisible();
     await expect(page.getByAltText("contactus")).toBeVisible();
 
-    console.log("✅ Direct URL navigation to policy page worked correctly");
   });
 });

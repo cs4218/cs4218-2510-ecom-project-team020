@@ -25,8 +25,6 @@ test.describe("Cart Page UI", () => {
     await cartPage.expectEmptyCart();
 
     await cartPage.expectCartItemCountAccurate();
-
-    console.log("✅ Empty cart state displayed correctly");
   });
 
   /**
@@ -51,7 +49,6 @@ test.describe("Cart Page UI", () => {
     await cartPage.expectCartItemComplete(0);
     await cartPage.expectCartTotalCorrect();
 
-    console.log("✅ Single item added to cart and displayed correctly");
   });
 
   /**
@@ -82,7 +79,6 @@ test.describe("Cart Page UI", () => {
     await cartPage.expectCartItemComplete(0);
     await cartPage.expectCartItemComplete(1);
 
-    console.log("✅ Multiple items added to cart and displayed correctly");
   });
 
   /**
@@ -112,7 +108,6 @@ test.describe("Cart Page UI", () => {
 
     await cartPage.expectCartTotalCorrect();
 
-    console.log("✅ Item removed from cart correctly");
   });
 
   /**
@@ -130,7 +125,6 @@ test.describe("Cart Page UI", () => {
 
     await cartPage.expectCartTotalCorrect();
 
-    console.log("✅ Cart items displayed correctly");
   });
 
   /**
@@ -149,40 +143,6 @@ test.describe("Cart Page UI", () => {
     const totalText = await cartPage.getCartTotal();
     expect(totalText).toMatch(/Total : \$[\d,]+\.\d{2}/);
 
-    console.log("✅ Cart total calculated correctly");
-  });
-
-  /**
-   * TC7: Payment Button Functionality
-   * 1. User has items in cart
-   * 2. User clicks payment button
-   * 3. Payment form is displayed (if user is logged in)
-   */
-  test("should show payment form when payment button clicked", async ({
-    page,
-  }) => {
-    await cartPage.addProductToCart(0);
-    await cartPage.waitForCartUpdate();
-    await cartPage.gotoFromHomepage();
-
-    // Check if payment button is visible
-    const paymentButton = page.getByRole("button", { name: "Make Payment" });
-    const loginButton = page.getByRole("button", {
-      name: /Please Login to checkout|Update Address/,
-    });
-
-    if (await paymentButton.isVisible()) {
-      try {
-        await cartPage.clickPayment();
-        console.log("✅ Payment button functionality tested");
-      } catch (error) {
-        console.log("✅ Payment button clicked but form may not be ready");
-      }
-    } else if (await loginButton.isVisible()) {
-      console.log("✅ Payment button requires login (expected behavior)");
-    } else {
-      console.log("✅ No payment option available (user may need to login)");
-    }
   });
 
   /**
@@ -205,8 +165,6 @@ test.describe("Cart Page UI", () => {
 
     const countText = await cartPage.cartCountText.textContent();
     expect(countText).toContain("You Have 2 items in your cart");
-
-    console.log("✅ Cart item count displayed correctly");
   });
 
   /**
@@ -229,7 +187,6 @@ test.describe("Cart Page UI", () => {
     expect(itemName.length).toBeGreaterThan(0);
     expect(itemPrice).toContain("Price : 54.99");
 
-    console.log("✅ Cart item displays complete information");
   });
 
   /**
@@ -249,7 +206,6 @@ test.describe("Cart Page UI", () => {
     await cartPage.expectCartHasItems();
     await cartPage.expectCartTotalCorrect();
 
-    console.log("✅ Same product added multiple times handled correctly");
   });
 });
 
@@ -273,7 +229,6 @@ test.describe("Cart Page Navigations", () => {
     await cartPage.expectPageStructure();
     await expect(page).toHaveURL(/\/cart/);
 
-    console.log("✅ Successfully navigated to cart from homepage");
   });
   /**
    * TC12: Tests navigation from cart back to homepage:
@@ -289,7 +244,6 @@ test.describe("Cart Page Navigations", () => {
       page.getByRole("heading", { name: "All Products" })
     ).toBeVisible();
 
-    console.log("✅ Successfully navigated back to homepage from cart");
   });
 
   /**
@@ -337,8 +291,6 @@ test.describe("Cart Page Edge Cases", () => {
     await cartPage.goto();
 
     await cartPage.expectPageStructure();
-
-    console.log("✅ Cart API failure handled gracefully");
   });
 
   /**
@@ -360,7 +312,5 @@ test.describe("Cart Page Edge Cases", () => {
     expect(itemCount).toBeGreaterThanOrEqual(1);
 
     await cartPage.expectCartTotalCorrect();
-
-    console.log("✅ Large cart handled correctly");
   });
 });

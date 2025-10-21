@@ -453,8 +453,6 @@ describe("Payment Controller E2E Tests", () => {
 
       expect(response.body).toEqual({ error: "Internal server error" });
     });
-
-
     it("should handle invalid cart data with negative prices", async () => {
       const braintree = require("braintree");
       const gateway = new braintree.BraintreeGateway();
