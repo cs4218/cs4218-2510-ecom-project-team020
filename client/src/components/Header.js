@@ -123,11 +123,16 @@ const Header = () => {
                 </>
               )}
               <li className="nav-item">
-                <Badge count={cart?.length} showZero>
-                  <NavLink to="/cart" className="nav-link">
-                    Cart
-                  </NavLink>
-                </Badge>
+                <NavLink to="/cart" className="nav-link d-flex align-items-center gap-1">
+                  <span>Cart</span>
+                  <Badge
+                    count={cart?.length}
+                    showZero
+                    overflowCount={99}
+                    size="small"              
+                    className="align-middle"  
+                  />
+                </NavLink>
               </li>
             </ul>
           </div>
