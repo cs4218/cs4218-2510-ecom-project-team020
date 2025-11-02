@@ -1,5 +1,16 @@
 # CS4218 Project - Virtual Vault
 
+# Milestone 3
+
+## Workload Distribution
+**Gerald Ng Jun Xiang @geraldngjx**
+
+AI Declaration (Performance): Performance tests were created and executed with AI assistance but were curated, validated, and refined by Gerald Ng Jun Xiang (@geraldngjx). This includes the seed and clean-up scripts.
+| Domain | File | Description |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database Seeding | `seed.js` | Seeds test data (categories, users, products) into the database with `isTestAsset: true` flag for easy cleanup. |
+| Database Cleanup | `cleanup.js` | Removes test data from the database based on specific criteria (e.g., address for users, `isTestAsset` for others). |
+
 # Milestone 2
 Milestone 2 CI Report:
 
