@@ -19,15 +19,12 @@ const connectDB = async () => {
 const cleanupTestData = async () => {
   await connectDB();
 
-  // Delete test categories
   const categoryResult = await categoryModel.deleteMany({ isTestAsset: true });
   console.log(`Deleted ${categoryResult.deletedCount} test categories`);
 
-  // Delete test users (where address is "123 Test St")
   const userResult = await userModel.deleteMany({ address: "123 Test St" });
   console.log(`Deleted ${userResult.deletedCount} test users`);
 
-  // Delete test products
   const productResult = await productModel.deleteMany({ isTestAsset: true });
   console.log(`Deleted ${productResult.deletedCount} test products`);
 
