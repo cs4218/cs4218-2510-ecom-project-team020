@@ -117,7 +117,7 @@ describe("CartPage Component", () => {
         ([arg]) => arg instanceof TypeError
       );
       expect(hadOurError).toBe(true);
-      expect(screen.getByText(/Total :/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total\s*:/i)).toBeInTheDocument();
     });
 
     it("logs error if cart item prices are not numbers", () => {
@@ -135,7 +135,7 @@ describe("CartPage Component", () => {
         ([arg]) => arg instanceof Error && arg.message.includes("Invalid price at index")
       );
       expect(hadOurError).toBe(true);
-      expect(screen.getByText(/Total :/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total\s*:/i)).toBeInTheDocument();
     });
 
     it("logs error if cart item prices are negative", () => {
@@ -153,7 +153,7 @@ describe("CartPage Component", () => {
         ([arg]) => arg instanceof Error && arg.message.includes("Invalid price at index")
       );
       expect(hadOurError).toBe(true);
-      expect(screen.getByText(/Total :/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total\s*:/i)).toBeInTheDocument();
     });
 
     it("logs error if any other error is thrown during calculation", () => {

@@ -27,3 +27,232 @@
     text-align: center;
     /* margin-top: -140px !important; */
   }
+
+  /* Extra small devices */
+  @media (max-width: 480px) {
+    .cart-page h1 {
+      font-size: 1rem;
+      padding: 8px !important;
+    }
+    
+    .cart-page h1 > p {
+      font-size: 14px;
+    }
+    
+    .cart-page .card .col-md-4:first-child img {
+      height: 100px !important;
+    }
+    
+    .cart-page .cart-summary h2 {
+      font-size: 1.1rem;
+    }
+    
+    .cart-page .cart-summary h4 {
+      font-size: 1rem;
+    }
+  }
+
+  /* Additional mobile optimizations */
+  @media (max-width: 768px) {
+    /* Better spacing for mobile */
+    .cart-page .container {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
+    
+    /* Improve card spacing */
+    .cart-page .card {
+      margin-bottom: 15px !important;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Better typography for mobile */
+    .cart-page .card h6 {
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+    
+    .cart-page .card p {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+    
+    /* Improve button touch targets */
+    .cart-page .btn {
+      min-height: 44px;
+      font-size: 16px; /* Prevents zoom on iOS */
+      touch-action: manipulation;
+    }
+    
+    /* Better summary card styling */
+    .cart-page .cart-summary .card {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* Improve address display */
+    .cart-page .cart-summary p.small {
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    
+    /* Better spacing for payment section */
+    .cart-page .cart-summary .mt-3 {
+      margin-top: 1rem !important;
+    }
+    
+    /* Ensure images don't overflow */
+    .cart-page .card img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+
+  /* Landscape mobile adjustments */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .cart-page .card {
+      flex-direction: row !important;
+      height: 120px !important;
+    }
+    
+    .cart-page .card .col-md-4:first-child {
+      flex: 0 0 30%;
+      max-width: 30%;
+    }
+    
+    .cart-page .card .col-md-4:nth-child(2) {
+      flex: 0 0 40%;
+      max-width: 40%;
+    }
+    
+    .cart-page .card .col-md-4:last-child {
+      flex: 0 0 30%;
+      max-width: 30%;
+    }
+  }
+
+  /* Mobile Responsive Styles */
+  @media (max-width: 768px) {
+    .cart-page {
+      margin-top: 40px;
+    }
+    
+    .cart-page h1 {
+      padding: 10px !important;
+      font-size: 1.2rem;
+    }
+    
+    .cart-page h1 > p {
+      font-size: 16px;
+      margin-top: 8px;
+    }
+    
+    /* Fix the card layout for mobile */
+    .cart-page .card {
+      height: auto !important;
+      padding: 10px !important;
+      margin-bottom: 15px !important;
+      flex-direction: column !important;
+    }
+    
+    /* Make the card columns stack vertically */
+    .cart-page .card > div {
+      width: 100% !important;
+      padding: 5px 0 !important;
+    }
+    
+    /* Product image container */
+    .cart-page .card .col-md-4:first-child {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .cart-page .card .col-md-4:first-child img {
+      height: 120px !important;
+      width: auto !important;
+      max-width: 100% !important;
+      object-fit: contain;
+    }
+    
+    /* Product details section */
+    .cart-page .card .col-md-4:nth-child(2) {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .cart-page .card .col-md-4:nth-child(2) p {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    /* Remove button section */
+    .cart-page .cart-remove-btn {
+      margin-top: 10px;
+    }
+    
+    .cart-page .cart-remove-btn .btn {
+      width: 100%;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    
+    /* Cart summary section */
+    .cart-page .cart-summary {
+      margin-top: 20px;
+      padding: 15px;
+    }
+    
+    .cart-page .cart-summary h2 {
+      font-size: 1.3rem;
+    }
+    
+    .cart-page .cart-summary h4 {
+      font-size: 1.1rem;
+    }
+    
+    .cart-page .cart-summary .btn {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 14px;
+    }
+    
+    /* Responsive grid adjustments */
+    .cart-page .container {
+      padding: 0 10px;
+    }
+    
+    .cart-page .row {
+      margin: 0 !important;
+    }
+    
+    .cart-page .col-md-7,
+    .cart-page .col-md-5 {
+      padding: 0 !important;
+    }
+  }
+
+  /* Extra small devices */
+  @media (max-width: 480px) {
+    .cart-page h1 {
+      font-size: 1rem;
+      padding: 8px !important;
+    }
+    
+    .cart-page h1 > p {
+      font-size: 14px;
+    }
+    
+    .cart-page .card .col-md-4:first-child img {
+      height: 100px !important;
+    }
+    
+    .cart-page .cart-summary h2 {
+      font-size: 1.1rem;
+    }
+    
+    .cart-page .cart-summary h4 {
+      font-size: 1rem;
+    }
+  }
