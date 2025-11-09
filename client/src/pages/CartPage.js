@@ -179,7 +179,9 @@ const CartPage = () => {
                 )}
                 
                 <div className="mt-2">
-                  {!clientToken || !auth?.token || !cart?.length ? (
+                  {!cart?.length ? (
+                    <p className="text-muted text-center">Your cart is empty</p>
+                  ) : !clientToken || !auth?.token ? (
                     <p className="text-muted text-center">Login to enable checkout</p>
                   ) : (
                     <>
